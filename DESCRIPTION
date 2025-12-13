@@ -1,0 +1,16 @@
+Package: ttsapi
+Title: OpenAI-Compatible Text-to-Speech API Client
+Version: 0.1.0
+Authors@R:
+    person("Troy", "Hernandez", role = c("aut", "cre"),
+           email = "troy.hernandez@pm.me")
+Description: An R client for OpenAI-compatible Text-to-Speech
+    APIs, including OpenAI's /v1/audio/speech endpoint and local servers
+    implementing the same spec (Chatterbox, LM Studio, OpenWebUI, AnythingLLM, etc.).
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Imports:
+    curl,
+    jsonlite
