@@ -14,7 +14,8 @@ tts_speech(
   exaggeration = NULL,
   cfg_weight = NULL,
   seed = NULL,
-  response_format = NULL
+  response_format = NULL,
+  instructions = NULL
 )
 }
 \arguments{
@@ -39,6 +40,9 @@ servers ignore this).}
 
 \item{response_format}{Character or NULL. Audio format (e.g., "wav", "mp3").
 If NULL and file is provided, inferred from file extension.}
+
+\item{instructions}{Character or NULL. Instructions for how the voice should
+speak (OpenAI-specific, e.g., "Speak in a cheerful and positive tone.").}
 }
 \value{
 If \code{file} is provided, invisibly returns the file path.
