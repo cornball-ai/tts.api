@@ -86,6 +86,15 @@ tts_speech(
  file = "hello.mp3"
 )
 
+# OpenAI with voice instructions
+tts_speech(
+  input = "Today is a wonderful day to build something people love!",
+  voice = "coral",
+  file = "speech.mp3",
+  model = "gpt-4o-mini-tts",
+  instructions = "Speak in a cheerful and positive tone."
+)
+
 # With Chatterbox-specific parameters
 tts_speech(
   input = "Hello with my custom voice!",
@@ -153,6 +162,7 @@ tts_speech_clone(
 | `cfg_weight`      | Chatterbox: CFG weight                                 |
 | `seed`            | Random seed for reproducibility                        |
 | `response_format` | Audio format (inferred from file extension if not set) |
+| `instructions`    | OpenAI: voice style instructions (e.g., "Speak cheerfully") |
 
 ### `tts_voice_upload()`
 
