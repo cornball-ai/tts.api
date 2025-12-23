@@ -17,6 +17,8 @@
 #'   If NULL and file is provided, inferred from file extension.
 #' @param instructions Character or NULL. Instructions for how the voice should
 #'   speak (OpenAI-specific, e.g., "Speak in a cheerful and positive tone.").
+#' @param chunk_size Integer or NULL. Maximum chunk length for text processing
+#'   (Chatterbox-specific).
 #'
 #' @return If \code{file} is provided, invisibly returns the file path.
 #'   If \code{file} is NULL, returns raw audio bytes.
@@ -53,7 +55,8 @@ tts_speech <- function(input,
                        cfg_weight = NULL,
                        seed = NULL,
                        response_format = NULL,
-                       instructions = NULL) {
+                       instructions = NULL,
+                       chunk_size = NULL) {
   # Validate required parameters
  if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
     stop("'input' must be a non-empty character string", call. = FALSE)
@@ -76,6 +79,7 @@ tts_speech <- function(input,
   if (!is.null(cfg_weight)) body$cfg_weight <- cfg_weight
   if (!is.null(seed)) body$seed <- as.integer(seed)
   if (!is.null(instructions)) body$instructions <- instructions
+  if (!is.null(chunk_size)) body$chunk_size <- as.integer(chunk_size)
 
   # Handle response format
   if (!is.null(response_format)) {
