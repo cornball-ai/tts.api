@@ -163,7 +163,6 @@ tts_speech_clone(
 | `seed`            | Random seed for reproducibility                        |
 | `response_format` | Audio format (inferred from file extension if not set) |
 | `instructions`    | OpenAI: voice style instructions (e.g., "Speak cheerfully") |
-| `chunk_size`      | Chatterbox: maximum chunk length for text processing   |
 
 ### `tts_voice_upload()`
 
