@@ -1,21 +1,27 @@
 #' Generate Speech from Text
 #'
-#' Calls the OpenAI-compatible /v1/audio/speech endpoint to generate audio
-#' from text input. Supports both local Chatterbox server and OpenAI TTS API.
+#' Generate audio from text using various TTS backends: local Chatterbox server,
+#' OpenAI TTS API, or ElevenLabs API.
 #'
 #' @param input Character. The text to convert to speech.
 #' @param voice Character. The voice to use for synthesis.
 #'   For OpenAI: "alloy", "echo", "fable", "onyx", "nova", "shimmer".
+#'   For ElevenLabs: voice ID (e.g., "XpDLYThV0yUAFjVTok7m").
 #'   For Chatterbox: custom voice names uploaded via tts_voice_upload().
 #' @param file Character or NULL. Output file path. If NULL, returns raw bytes.
 #' @param backend Character. Backend to use: "chatterbox" for local server,
-#'   "openai" for OpenAI TTS API, or "auto" to use configured API base.
-#' @param model Character or NULL. The model to use. For OpenAI: "tts-1" or
-#'   "tts-1-hd". For Chatterbox: optional, often ignored.
+#'   "openai" for OpenAI TTS API, "elevenlabs" for ElevenLabs API,
+#'   or "auto" to use configured API base.
+#' @param model Character or NULL. The model to use.
+#'   For OpenAI: "tts-1" or "tts-1-hd".
+#'   For ElevenLabs: "eleven_monolingual_v1", "eleven_multilingual_v2", etc.
+#'   For Chatterbox: optional, often ignored.
 #' @param temperature Numeric or NULL. Sampling temperature for generation.
 #' @param speed Numeric or NULL. Speed multiplier for the audio.
 #' @param exaggeration Numeric or NULL. Exaggeration parameter (Chatterbox-specific).
 #' @param cfg_weight Numeric or NULL. CFG weight parameter (Chatterbox-specific).
+#' @param stability Numeric or NULL. Voice stability 0-1 (ElevenLabs-specific). Default 0.5.
+#' @param similarity_boost Numeric or NULL. Similarity boost 0-1 (ElevenLabs-specific). Default 0.75.
 #' @param seed Integer or NULL. Random seed for reproducible output.
 #' @param response_format Character or NULL. Audio format (e.g., "wav", "mp3").
 #'   If NULL and file is provided, inferred from file extension.
@@ -33,28 +39,23 @@
 #' tts_speech("Hello, world!", voice = "FatherChristmas", file = "hello.wav")
 #'
 #' # Using OpenAI TTS
-#' tts_set_api_key(Sys.getenv("OPENAI_API_KEY"))
 #' tts_speech("Hello, world!", voice = "nova", file = "hello.mp3", backend = "openai")
 #'
-#' # With additional parameters (Chatterbox)
-#' tts_speech(
-#'   input = "This is a test.",
-#'   voice = "FatherChristmas",
-#'   file = "test.wav",
-#'   temperature = 0.9,
-#'   exaggeration = 1.2,
-#'   cfg_weight = 0.3
-#' )
+#' # Using ElevenLabs
+#' tts_speech("Hello, world!", voice = "XpDLYThV0yUAFjVTok7m",
+#'            file = "hello.mp3", backend = "elevenlabs")
 #' }
 tts_speech <- function(input,
                        voice,
                        file = NULL,
-                       backend = c("auto", "chatterbox", "openai"),
+                       backend = c("auto", "chatterbox", "openai", "elevenlabs"),
                        model = NULL,
                        temperature = NULL,
                        speed = NULL,
                        exaggeration = NULL,
                        cfg_weight = NULL,
+                       stability = NULL,
+                       similarity_boost = NULL,
                        seed = NULL,
                        response_format = NULL,
                        instructions = NULL) {
@@ -69,18 +70,27 @@ tts_speech <- function(input,
     stop("'voice' must be a non-empty character string", call. = FALSE)
   }
 
-  # Handle backend switching
+  # Dispatch to ElevenLabs (different API structure)
+  if (backend == "elevenlabs") {
+    return(.tts_elevenlabs(
+      input = input,
+      voice_id = voice,
+      file = file,
+      model = model,
+      stability = stability,
+      similarity_boost = similarity_boost
+    ))
+  }
+
+  # Handle OpenAI backend switching
   if (backend == "openai") {
-    # Save current settings
     old_base <- getOption("ttsapi.api_base")
     old_key <- getOption("ttsapi.api_key")
     on.exit({
       options(ttsapi.api_base = old_base, ttsapi.api_key = old_key)
     }, add = TRUE)
 
-    # Set OpenAI settings
     options(ttsapi.api_base = "https://api.openai.com")
-    # Use existing key if already set for OpenAI, or from env var
     if (is.null(old_key) || !grepl("^sk-", old_key %||% "")) {
       api_key <- Sys.getenv("OPENAI_API_KEY")
       if (nchar(api_key) > 0) {
@@ -88,19 +98,17 @@ tts_speech <- function(input,
       }
     }
 
-    # Set default model for OpenAI if not specified
     if (is.null(model)) {
       model <- "tts-1"
     }
   }
 
-  # Build request body
+  # Build request body (OpenAI-compatible: Chatterbox, OpenAI)
   body <- list(
     input = input,
     voice = voice
   )
 
-  # Add optional parameters if provided
   if (!is.null(model)) body$model <- model
   if (!is.null(temperature)) body$temperature <- temperature
   if (!is.null(speed)) body$speed <- speed
@@ -113,7 +121,6 @@ tts_speech <- function(input,
   if (!is.null(response_format)) {
     body$response_format <- response_format
   } else if (!is.null(file)) {
-    # Infer from file extension
     ext <- tolower(tools::file_ext(file))
     if (nchar(ext) > 0) {
       body$response_format <- ext
@@ -121,14 +128,80 @@ tts_speech <- function(input,
   }
 
   # Make request
-  audio_data <- .tts_post_json("/v1/audio/speech", body, expect_binary = TRUE)
+ audio_data <- .tts_post_json("/v1/audio/speech", body, expect_binary = TRUE)
 
   # Return or write to file
   if (is.null(file)) {
     return(audio_data)
   }
 
-  # Write to file
+  tryCatch({
+    writeBin(audio_data, file)
+  }, error = function(e) {
+    stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
+  })
+
+  invisible(file)
+}
+
+
+#' ElevenLabs TTS backend
+#' @keywords internal
+.tts_elevenlabs <- function(input, voice_id, file = NULL, model = NULL,
+                            stability = NULL, similarity_boost = NULL) {
+
+  api_key <- Sys.getenv("ELEVENLABS_API_KEY")
+  if (api_key == "") {
+    api_key <- getOption("ttsapi.elevenlabs_key")
+  }
+  if (is.null(api_key) || api_key == "") {
+    stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use tts_set_elevenlabs_key()", call. = FALSE)
+  }
+
+  url <- paste0("https://api.elevenlabs.io/v1/text-to-speech/", voice_id)
+
+  body <- list(
+    text = input,
+    model_id = model %||% "eleven_monolingual_v1",
+    voice_settings = list(
+      stability = stability %||% 0.5,
+      similarity_boost = similarity_boost %||% 0.75
+    )
+  )
+
+  h <- curl::new_handle()
+  curl::handle_setheaders(h,
+    "xi-api-key" = api_key,
+    "Content-Type" = "application/json",
+    "Accept" = "audio/mpeg"
+  )
+  curl::handle_setopt(h,
+    post = TRUE,
+    postfields = jsonlite::toJSON(body, auto_unbox = TRUE),
+    timeout = getOption("ttsapi.timeout", 120)
+  )
+
+  response <- tryCatch(
+    curl::curl_fetch_memory(url, handle = h),
+    error = function(e) {
+      stop("ElevenLabs connection failed: ", e$message, call. = FALSE)
+    }
+  )
+
+  if (response$status_code >= 400) {
+    err_msg <- tryCatch({
+      err <- jsonlite::fromJSON(rawToChar(response$content))
+      err$detail$message %||% err$detail %||% rawToChar(response$content)
+    }, error = function(e) rawToChar(response$content))
+    stop("ElevenLabs API error (", response$status_code, "): ", err_msg, call. = FALSE)
+  }
+
+  audio_data <- response$content
+
+  if (is.null(file)) {
+    return(audio_data)
+  }
+
   tryCatch({
     writeBin(audio_data, file)
   }, error = function(e) {
