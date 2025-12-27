@@ -1,13 +1,17 @@
 #' Generate Speech from Text
 #'
 #' Calls the OpenAI-compatible /v1/audio/speech endpoint to generate audio
-#' from text input.
+#' from text input. Supports both local Chatterbox server and OpenAI TTS API.
 #'
 #' @param input Character. The text to convert to speech.
 #' @param voice Character. The voice to use for synthesis.
+#'   For OpenAI: "alloy", "echo", "fable", "onyx", "nova", "shimmer".
+#'   For Chatterbox: custom voice names uploaded via tts_voice_upload().
 #' @param file Character or NULL. Output file path. If NULL, returns raw bytes.
-#' @param model Character or NULL. The model to use (optional, many local
-#'   servers ignore this).
+#' @param backend Character. Backend to use: "chatterbox" for local server,
+#'   "openai" for OpenAI TTS API, or "auto" to use configured API base.
+#' @param model Character or NULL. The model to use. For OpenAI: "tts-1" or
+#'   "tts-1-hd". For Chatterbox: optional, often ignored.
 #' @param temperature Numeric or NULL. Sampling temperature for generation.
 #' @param speed Numeric or NULL. Speed multiplier for the audio.
 #' @param exaggeration Numeric or NULL. Exaggeration parameter (Chatterbox-specific).
@@ -24,16 +28,15 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' # Setup for local Chatterbox server
+#' # Using local Chatterbox server
 #' tts_set_api_base("http://localhost:4123")
-#'
-#' # Generate speech to file
 #' tts_speech("Hello, world!", voice = "FatherChristmas", file = "hello.wav")
 #'
-#' # Get raw bytes (useful for Shiny)
-#' audio_bytes <- tts_speech("Hello!", voice = "default")
+#' # Using OpenAI TTS
+#' tts_set_api_key(Sys.getenv("OPENAI_API_KEY"))
+#' tts_speech("Hello, world!", voice = "nova", file = "hello.mp3", backend = "openai")
 #'
-#' # With additional parameters
+#' # With additional parameters (Chatterbox)
 #' tts_speech(
 #'   input = "This is a test.",
 #'   voice = "FatherChristmas",
@@ -46,6 +49,7 @@
 tts_speech <- function(input,
                        voice,
                        file = NULL,
+                       backend = c("auto", "chatterbox", "openai"),
                        model = NULL,
                        temperature = NULL,
                        speed = NULL,
@@ -54,12 +58,40 @@ tts_speech <- function(input,
                        seed = NULL,
                        response_format = NULL,
                        instructions = NULL) {
+
+  backend <- match.arg(backend)
+
   # Validate required parameters
- if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
+  if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
     stop("'input' must be a non-empty character string", call. = FALSE)
   }
   if (!is.character(voice) || length(voice) != 1 || nchar(voice) == 0) {
     stop("'voice' must be a non-empty character string", call. = FALSE)
+  }
+
+  # Handle backend switching
+  if (backend == "openai") {
+    # Save current settings
+    old_base <- getOption("ttsapi.api_base")
+    old_key <- getOption("ttsapi.api_key")
+    on.exit({
+      options(ttsapi.api_base = old_base, ttsapi.api_key = old_key)
+    }, add = TRUE)
+
+    # Set OpenAI settings
+    options(ttsapi.api_base = "https://api.openai.com")
+    # Use existing key if already set for OpenAI, or from env var
+    if (is.null(old_key) || !grepl("^sk-", old_key %||% "")) {
+      api_key <- Sys.getenv("OPENAI_API_KEY")
+      if (nchar(api_key) > 0) {
+        options(ttsapi.api_key = api_key)
+      }
+    }
+
+    # Set default model for OpenAI if not specified
+    if (is.null(model)) {
+      model <- "tts-1"
+    }
   }
 
   # Build request body
