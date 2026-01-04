@@ -21,14 +21,14 @@
 #' set_tts_base("http://localhost:4123")
 #'
 #' # Clone voice and generate speech
-#' tts_speech_clone(
+#' speech_clone(
 #'   input = "Hello with my custom voice!",
 #'   voice_file = "my_voice.mp3",
 #'   file = "output.wav",
 #'   exaggeration = 0.8
 #' )
 #' }
-tts_speech_clone <- function(input,
+speech_clone <- function(input,
                              voice_file,
                              file = NULL,
                              exaggeration = NULL,

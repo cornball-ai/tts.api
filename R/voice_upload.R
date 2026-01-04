@@ -1,7 +1,7 @@
 #' Upload Voice to Library
 #'
 #' Uploads a voice sample to the server's voice library for reuse.
-#' Once uploaded, the voice can be used by name in tts_speech().
+#' Once uploaded, the voice can be used by name in speech().
 #'
 #' @param voice_file Character. Path to the voice sample file (mp3, wav, etc.).
 #' @param voice_name Character. Name to save the voice as.
@@ -15,26 +15,26 @@
 #' set_tts_base("http://localhost:4123")
 #'
 #' # Upload a voice
-#' tts_voice_upload(
+#' voice_upload(
 #'   voice_file = "my_voice.wav",
 #'   voice_name = "my-custom-voice"
 #' )
 #'
 #' # Upload with language
-#' tts_voice_upload(
+#' voice_upload(
 #'   voice_file = "french_voice.wav",
 #'   voice_name = "french-speaker",
 #'   language = "fr"
 #' )
 #'
 #' # Then use it by name
-#' tts_speech(
+#' speech(
 #'   input = "Hello with my custom voice!",
 #'   voice = "my-custom-voice",
 #'   file = "output.wav"
 #' )
 #' }
-tts_voice_upload <- function(voice_file, voice_name, language = NULL) {
+voice_upload <- function(voice_file, voice_name, language = NULL) {
   # Validate parameters
   if (!is.character(voice_file) || length(voice_file) != 1) {
     stop("'voice_file' must be a character string", call. = FALSE)

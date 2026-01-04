@@ -49,31 +49,31 @@ Sets the API key for OpenAI-compatible APIs.
 set_tts_key(Sys.getenv("OPENAI_API_KEY"))
 ```
 
-### `set_tts_elevenlabs_key()`
+### `set_elevenlabs_key()`
 
 Sets the API key for ElevenLabs (separate from OpenAI key).
 
 ```r
-set_tts_elevenlabs_key(Sys.getenv("ELEVENLABS_API_KEY"))
+set_elevenlabs_key(Sys.getenv("ELEVENLABS_API_KEY"))
 ```
 
 ---
 
 ## **Speech Generation**
 
-### `tts_speech()`
+### `speech()`
 
 Main speech synthesis function with backend switching:
 
 ```r
 # OpenAI-compatible (uses set_tts_base())
-tts_speech(input, voice, file, backend = "auto")
+speech(input, voice, file, backend = "auto")
 
 # Explicit OpenAI (auto-configures base URL)
-tts_speech(input, voice, file, backend = "openai")
+speech(input, voice, file, backend = "openai")
 
 # ElevenLabs (uses own API, not OpenAI-compatible)
-tts_speech(input, voice, file, backend = "elevenlabs")
+speech(input, voice, file, backend = "elevenlabs")
 ```
 
 **Parameters by backend:**
@@ -90,11 +90,11 @@ tts_speech(input, voice, file, backend = "elevenlabs")
 | `stability` | No | No | Yes |
 | `similarity_boost` | No | No | Yes |
 
-### `tts_speech_clone()`
+### `speech_clone()`
 
 Voice cloning with file upload (Chatterbox only).
 
-### `tts_voice_upload()`
+### `voice_upload()`
 
 Upload voice to server library (Chatterbox only).
 
@@ -102,17 +102,17 @@ Upload voice to server library (Chatterbox only).
 
 ## **Utilities**
 
-### `tts_health()`
-
-Check if OpenAI-compatible backend is reachable.
-
-### `tts_voices()`
+### `voices()`
 
 List available voices from OpenAI-compatible backend.
 
-### `tts_languages()`
+### `languages()`
 
 List supported languages from backend.
+
+### `tts_health()`
+
+Check if OpenAI-compatible backend is reachable.
 
 ---
 
@@ -148,7 +148,7 @@ options(
 # **4. Backend Architecture**
 
 ```
-tts_speech(backend = ...)
+speech(backend = ...)
     │
     ├── "auto" / "chatterbox" ──→ OpenAI-compatible API
     │                              POST /v1/audio/speech
@@ -160,7 +160,7 @@ tts_speech(backend = ...)
     │
     └── "elevenlabs" ───────────→ ElevenLabs API (NOT OpenAI-compatible)
                                    POST /v1/text-to-speech/{voice_id}
-                                   Uses: set_tts_elevenlabs_key() or
+                                   Uses: set_elevenlabs_key() or
                                          ELEVENLABS_API_KEY env var
 ```
 
@@ -173,15 +173,15 @@ ttsapi/
   DESCRIPTION
   NAMESPACE
   R/
-    tts_speech.R           # Main function + .tts_elevenlabs()
-    tts_speech_clone.R     # Voice cloning (Chatterbox)
-    tts_voice_upload.R     # Voice upload (Chatterbox)
+    speech.R               # Main function + .tts_elevenlabs()
+    speech_clone.R         # Voice cloning (Chatterbox)
+    voice_upload.R         # Voice upload (Chatterbox)
+    voices.R
+    languages.R
     tts_health.R
-    tts_voices.R
-    tts_languages.R
     set_tts_base.R
     set_tts_key.R
-    set_tts_elevenlabs_key.R
+    set_elevenlabs_key.R
     internal_request.R
     zzz.R
   man/
@@ -202,3 +202,39 @@ ttsapi/
 
 GPU container management planned for separate `gpuctl` package.
 ttsapi remains a pure HTTP client.
+
+---
+
+# **8. Planned Backends**
+
+Reference: https://github.com/jhudsl/text2speech (abandoned, use as code reference only)
+
+| Backend | Priority | Auth | Notes |
+|---------|----------|------|-------|
+| **Azure TTS** | Medium | API key + region | REST-based, similar pattern to ElevenLabs |
+| **Coqui TTS** | Medium | None (local) | Look for OpenAI-compatible server wrappers |
+| **Amazon Polly** | Low | AWS SigV4 | Complex auth, adds aws.signature dep |
+| **Google Cloud** | Low | OAuth/service account | Needs googleAuthR ecosystem |
+
+## Azure TTS Implementation Notes
+
+```
+Endpoint: https://{region}.tts.speech.microsoft.com/cognitiveservices/v1
+Headers:
+  Ocp-Apim-Subscription-Key: {api_key}
+  Content-Type: application/ssml+xml
+  X-Microsoft-OutputFormat: audio-16khz-128kbitrate-mono-mp3
+Body: SSML XML
+```
+
+Configuration pattern:
+```r
+set_tts_azure_key(key, region)
+# Stores: ttsapi.azure_key, ttsapi.azure_region
+```
+
+## Coqui TTS Notes
+
+- Native Coqui requires Python
+- Look for: coqui-ai/TTS Docker images with REST API
+- Or: OpenAI-compatible wrappers (would just work with set_tts_base())

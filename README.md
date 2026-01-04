@@ -63,7 +63,7 @@ set_tts_base("https://api.openai.com")
 set_tts_key(Sys.getenv("OPENAI_API_KEY"))
 
 # For ElevenLabs (separate API key)
-set_tts_elevenlabs_key(Sys.getenv("ELEVENLABS_API_KEY"))
+set_elevenlabs_key(Sys.getenv("ELEVENLABS_API_KEY"))
 ```
 
 ### Check server health
@@ -80,21 +80,21 @@ tts_health()
 ### List available voices
 
 ``` r
-tts_voices()
+voices()
 ```
 
 ### Generate speech
 
 ``` r
 # Basic usage (uses configured base URL)
-tts_speech(
+speech(
   input = "Hello, world!",
   voice = "alloy",
   file = "hello.mp3"
 )
 
 # OpenAI with voice instructions
-tts_speech(
+speech(
   input = "Today is a wonderful day to build something people love!",
   voice = "coral",
   file = "speech.mp3",
@@ -104,7 +104,7 @@ tts_speech(
 )
 
 # Chatterbox with custom parameters
-tts_speech(
+speech(
   input = "Hello with my custom voice!",
   voice = "FatherChristmas",
   file = "speech.wav",
@@ -114,7 +114,7 @@ tts_speech(
 )
 
 # ElevenLabs (different API, not OpenAI-compatible)
-tts_speech(
+speech(
   input = "Hello from ElevenLabs!",
   voice = "XpDLYThV0yUAFjVTok7m",  # voice ID
   file = "hello_eleven.mp3",
@@ -125,7 +125,7 @@ tts_speech(
 )
 
 # Return raw bytes (useful for Shiny)
-audio_bytes <- tts_speech(
+audio_bytes <- speech(
   input = "Hello!",
   voice = "alloy"
 )
@@ -137,27 +137,27 @@ Upload a voice to the library for reuse:
 
 ``` r
 # Upload once
-tts_voice_upload(
+voice_upload(
   voice_file = "my_voice.wav",
   voice_name = "my-custom-voice"
 )
 
 # With language
-tts_voice_upload(
+voice_upload(
   voice_file = "french_voice.wav",
   voice_name = "french-speaker",
   language = "fr"
 )
 
 # Use the saved voice by name
-tts_speech(
+speech(
   input = "Hello with my custom voice!",
   voice = "my-custom-voice",
   file = "output.wav"
 )
 
 # Or for one-off cloning (uploads and generates in one call)
-tts_speech_clone(
+speech_clone(
   input = "Hello with my custom voice!",
   voice_file = "my_voice.mp3",
   file = "output.wav",
@@ -167,7 +167,7 @@ tts_speech_clone(
 
 ## Parameters
 
-### `tts_speech()`
+### `speech()`
 
 | Parameter | Backend | Description |
 |-----------|---------|-------------|
@@ -186,7 +186,7 @@ tts_speech_clone(
 | `seed` | Chatterbox | Random seed for reproducibility |
 | `response_format` | OpenAI, Chatterbox | Audio format |
 
-### `tts_voice_upload()` (Chatterbox)
+### `voice_upload()` (Chatterbox)
 
 | Parameter    | Description                     |
 |--------------|---------------------------------|
@@ -194,7 +194,7 @@ tts_speech_clone(
 | `voice_name` | Name to save the voice as       |
 | `language`   | Language code (e.g., "en", "fr")|
 
-### `tts_speech_clone()` (Chatterbox)
+### `speech_clone()` (Chatterbox)
 
 | Parameter      | Description                             |
 |----------------|-----------------------------------------|
@@ -213,12 +213,12 @@ tts_speech_clone(
 |----------|---------|
 | `set_tts_base()` | Set OpenAI-compatible API base URL |
 | `set_tts_key()` | Set OpenAI-compatible API key |
-| `set_tts_elevenlabs_key()` | Set ElevenLabs API key |
+| `set_elevenlabs_key()` | Set ElevenLabs API key |
 
 ### Other functions
 
-- `tts_voices()` - List available voices (OpenAI-compatible backends)
-- `tts_languages()` - List supported languages
+- `voices()` - List available voices (OpenAI-compatible backends)
+- `languages()` - List supported languages
 - `tts_health()` - Check server health (OpenAI-compatible backends)
 
 ## Dependencies

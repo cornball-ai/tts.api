@@ -7,7 +7,7 @@
 #' @param voice Character. The voice to use for synthesis.
 #'   For OpenAI: "alloy", "echo", "fable", "onyx", "nova", "shimmer".
 #'   For ElevenLabs: voice ID (e.g., "XpDLYThV0yUAFjVTok7m").
-#'   For Chatterbox: custom voice names uploaded via tts_voice_upload().
+#'   For Chatterbox: custom voice names uploaded via voice_upload().
 #' @param file Character or NULL. Output file path. If NULL, returns raw bytes.
 #' @param backend Character. Backend to use: "chatterbox" for local server,
 #'   "openai" for OpenAI TTS API, "elevenlabs" for ElevenLabs API,
@@ -36,16 +36,16 @@
 #' \dontrun{
 #' # Using local Chatterbox server
 #' set_tts_base("http://localhost:4123")
-#' tts_speech("Hello, world!", voice = "FatherChristmas", file = "hello.wav")
+#' speech("Hello, world!", voice = "FatherChristmas", file = "hello.wav")
 #'
 #' # Using OpenAI TTS
-#' tts_speech("Hello, world!", voice = "nova", file = "hello.mp3", backend = "openai")
+#' speech("Hello, world!", voice = "nova", file = "hello.mp3", backend = "openai")
 #'
 #' # Using ElevenLabs
-#' tts_speech("Hello, world!", voice = "XpDLYThV0yUAFjVTok7m",
-#'            file = "hello.mp3", backend = "elevenlabs")
+#' speech("Hello, world!", voice = "XpDLYThV0yUAFjVTok7m",
+#'        file = "hello.mp3", backend = "elevenlabs")
 #' }
-tts_speech <- function(input,
+speech <- function(input,
                        voice,
                        file = NULL,
                        backend = c("auto", "chatterbox", "openai", "elevenlabs"),
@@ -155,7 +155,7 @@ tts_speech <- function(input,
     api_key <- getOption("ttsapi.elevenlabs_key")
   }
   if (is.null(api_key) || api_key == "") {
-    stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_tts_elevenlabs_key()", call. = FALSE)
+    stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_elevenlabs_key()", call. = FALSE)
   }
 
   url <- paste0("https://api.elevenlabs.io/v1/text-to-speech/", voice_id)

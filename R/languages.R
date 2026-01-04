@@ -8,10 +8,10 @@
 #' @examples
 #' \dontrun{
 #' set_tts_base("http://localhost:4123")
-#' languages <- tts_languages()
-#' print(languages)
+#' langs <- languages()
+#' print(langs)
 #' }
-tts_languages <- function() {
+languages <- function() {
   result <- tryCatch(
     .tts_get("/languages"),
     error = function(e) {

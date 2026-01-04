@@ -20,8 +20,8 @@ Checks whether the TTS backend is reachable by trying common health endpoints.
 \examples{
 \dontrun{
 set_tts_base("http://localhost:4123")
-health <- tts_health()
-if (health$ok) {
+h <- tts_health()
+if (h$ok) {
   message("Server is ready!")
 }
 }
