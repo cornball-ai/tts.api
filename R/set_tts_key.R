@@ -8,9 +8,9 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' tts_set_api_key(Sys.getenv("OPENAI_API_KEY"))
+#' set_tts_key(Sys.getenv("OPENAI_API_KEY"))
 #' }
-tts_set_api_key <- function(key) {
+set_tts_key <- function(key) {
   if (!is.character(key) || length(key) != 1) {
     stop("'key' must be a character string", call. = FALSE)
   }

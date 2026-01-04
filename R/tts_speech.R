@@ -35,7 +35,7 @@
 #' @examples
 #' \dontrun{
 #' # Using local Chatterbox server
-#' tts_set_api_base("http://localhost:4123")
+#' set_tts_base("http://localhost:4123")
 #' tts_speech("Hello, world!", voice = "FatherChristmas", file = "hello.wav")
 #'
 #' # Using OpenAI TTS
@@ -155,7 +155,7 @@ tts_speech <- function(input,
     api_key <- getOption("ttsapi.elevenlabs_key")
   }
   if (is.null(api_key) || api_key == "") {
-    stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use tts_set_elevenlabs_key()", call. = FALSE)
+    stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_tts_elevenlabs_key()", call. = FALSE)
   }
 
   url <- paste0("https://api.elevenlabs.io/v1/text-to-speech/", voice_id)

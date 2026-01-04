@@ -9,12 +9,12 @@
 #' @examples
 #' \dontrun{
 #' # For local Chatterbox server
-#' tts_set_api_base("http://localhost:4123")
+#' set_tts_base("http://localhost:4123")
 #'
 #' # For OpenAI
-#' tts_set_api_base("https://api.openai.com")
+#' set_tts_base("https://api.openai.com")
 #' }
-tts_set_api_base <- function(url) {
+set_tts_base <- function(url) {
   if (!is.character(url) || length(url) != 1 || nchar(url) == 0) {
     stop("'url' must be a non-empty character string", call. = FALSE)
   }
@@ -34,8 +34,8 @@ tts_set_api_base <- function(url) {
   base <- getOption("ttsapi.api_base")
   if (is.null(base) || nchar(base) == 0) {
     stop(
-      "API base URL not set. Use tts_set_api_base() to configure it.\n",
-      "Example: tts_set_api_base(\"http://localhost:4123\")",
+      "API base URL not set. Use set_tts_base() to configure it.\n",
+      "Example: set_tts_base(\"http://localhost:4123\")",
       call. = FALSE
     )
   }

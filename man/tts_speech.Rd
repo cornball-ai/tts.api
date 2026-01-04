@@ -8,11 +8,14 @@ tts_speech(
   input,
   voice,
   file = NULL,
+  backend = c("auto", "chatterbox", "openai", "elevenlabs"),
   model = NULL,
   temperature = NULL,
   speed = NULL,
   exaggeration = NULL,
   cfg_weight = NULL,
+  stability = NULL,
+  similarity_boost = NULL,
   seed = NULL,
   response_format = NULL,
   instructions = NULL
@@ -21,12 +24,21 @@ tts_speech(
 \arguments{
 \item{input}{Character. The text to convert to speech.}
 
-\item{voice}{Character. The voice to use for synthesis.}
+\item{voice}{Character. The voice to use for synthesis.
+For OpenAI: "alloy", "echo", "fable", "onyx", "nova", "shimmer".
+For ElevenLabs: voice ID (e.g., "XpDLYThV0yUAFjVTok7m").
+For Chatterbox: custom voice names uploaded via tts_voice_upload().}
 
 \item{file}{Character or NULL. Output file path. If NULL, returns raw bytes.}
 
-\item{model}{Character or NULL. The model to use (optional, many local
-servers ignore this).}
+\item{backend}{Character. Backend to use: "chatterbox" for local server,
+"openai" for OpenAI TTS API, "elevenlabs" for ElevenLabs API,
+or "auto" to use configured API base.}
+
+\item{model}{Character or NULL. The model to use.
+For OpenAI: "tts-1" or "tts-1-hd".
+For ElevenLabs: "eleven_monolingual_v1", "eleven_multilingual_v2", etc.
+For Chatterbox: optional, often ignored.}
 
 \item{temperature}{Numeric or NULL. Sampling temperature for generation.}
 
@@ -35,6 +47,10 @@ servers ignore this).}
 \item{exaggeration}{Numeric or NULL. Exaggeration parameter (Chatterbox-specific).}
 
 \item{cfg_weight}{Numeric or NULL. CFG weight parameter (Chatterbox-specific).}
+
+\item{stability}{Numeric or NULL. Voice stability 0-1 (ElevenLabs-specific). Default 0.5.}
+
+\item{similarity_boost}{Numeric or NULL. Similarity boost 0-1 (ElevenLabs-specific). Default 0.75.}
 
 \item{seed}{Integer or NULL. Random seed for reproducible output.}
 
@@ -49,28 +65,20 @@ If \code{file} is provided, invisibly returns the file path.
 If \code{file} is NULL, returns raw audio bytes.
 }
 \description{
-Calls the OpenAI-compatible /v1/audio/speech endpoint to generate audio
-from text input.
+Generate audio from text using various TTS backends: local Chatterbox server,
+OpenAI TTS API, or ElevenLabs API.
 }
 \examples{
 \dontrun{
-# Setup for local Chatterbox server
-tts_set_api_base("http://localhost:4123")
-
-# Generate speech to file
+# Using local Chatterbox server
+set_tts_base("http://localhost:4123")
 tts_speech("Hello, world!", voice = "FatherChristmas", file = "hello.wav")
 
-# Get raw bytes (useful for Shiny)
-audio_bytes <- tts_speech("Hello!", voice = "default")
+# Using OpenAI TTS
+tts_speech("Hello, world!", voice = "nova", file = "hello.mp3", backend = "openai")
 
-# With additional parameters
-tts_speech(
-  input = "This is a test.",
-  voice = "FatherChristmas",
-  file = "test.wav",
-  temperature = 0.9,
-  exaggeration = 1.2,
-  cfg_weight = 0.3
-)
+# Using ElevenLabs
+tts_speech("Hello, world!", voice = "XpDLYThV0yUAFjVTok7m",
+           file = "hello.mp3", backend = "elevenlabs")
 }
 }

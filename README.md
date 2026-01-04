@@ -1,11 +1,11 @@
 # ttsapi
 
-An R client for OpenAI-compatible Text-to-Speech APIs.
+An R client for Text-to-Speech APIs.
 
-Works with:
+Supports multiple backends:
 
-- OpenAI `/v1/audio/speech`
-- Local servers: Chatterbox, LM Studio, OpenWebUI, AnythingLLM, etc.
+- **OpenAI-compatible**: OpenAI, Chatterbox, LM Studio, OpenWebUI, AnythingLLM
+- **ElevenLabs**: Separate API with voice cloning and multilingual models
 
 ## Installation
 
@@ -16,9 +16,7 @@ devtools::install_github("cornball-ai/ttsapi")
 
 ## Backend Setup
 
-You need either a local TTS server or OpenAI API credentials.
-
-### Chatterbox (Local)
+### Chatterbox (Local, OpenAI-compatible)
 
 Clone and run [chatterbox-tts-api](https://github.com/travisvn/chatterbox-tts-api):
 
@@ -44,6 +42,12 @@ docker run -d \
 2. Generate an API key at https://platform.openai.com/api-keys
 3. Set the environment variable `OPENAI_API_KEY`
 
+### ElevenLabs
+
+1. Create an account at https://elevenlabs.io
+2. Get your API key from https://elevenlabs.io/app/settings/api-keys
+3. Set the environment variable `ELEVENLABS_API_KEY`
+
 ## Usage
 
 ### Setup
@@ -51,12 +55,15 @@ docker run -d \
 ``` r
 library(ttsapi)
 
-# For local Chatterbox server
-tts_set_api_base("http://localhost:4123")
+# For local Chatterbox server (OpenAI-compatible)
+set_tts_base("http://localhost:4123")
 
 # For OpenAI
-tts_set_api_base("https://api.openai.com")
-tts_set_api_key(Sys.getenv("OPENAI_API_KEY"))
+set_tts_base("https://api.openai.com")
+set_tts_key(Sys.getenv("OPENAI_API_KEY"))
+
+# For ElevenLabs (separate API key)
+set_tts_elevenlabs_key(Sys.getenv("ELEVENLABS_API_KEY"))
 ```
 
 ### Check server health
@@ -79,11 +86,11 @@ tts_voices()
 ### Generate speech
 
 ``` r
-# Basic usage
+# Basic usage (uses configured base URL)
 tts_speech(
- input = "Hello, world!",
- voice = "alloy",
- file = "hello.mp3"
+  input = "Hello, world!",
+  voice = "alloy",
+  file = "hello.mp3"
 )
 
 # OpenAI with voice instructions
@@ -91,11 +98,12 @@ tts_speech(
   input = "Today is a wonderful day to build something people love!",
   voice = "coral",
   file = "speech.mp3",
+  backend = "openai",
   model = "gpt-4o-mini-tts",
   instructions = "Speak in a cheerful and positive tone."
 )
 
-# With Chatterbox-specific parameters
+# Chatterbox with custom parameters
 tts_speech(
   input = "Hello with my custom voice!",
   voice = "FatherChristmas",
@@ -103,6 +111,17 @@ tts_speech(
   temperature = 0.9,
   exaggeration = 1.2,
   cfg_weight = 0.3
+)
+
+# ElevenLabs (different API, not OpenAI-compatible)
+tts_speech(
+  input = "Hello from ElevenLabs!",
+  voice = "XpDLYThV0yUAFjVTok7m",  # voice ID
+  file = "hello_eleven.mp3",
+  backend = "elevenlabs",
+  model = "eleven_multilingual_v2",
+  stability = 0.5,
+  similarity_boost = 0.75
 )
 
 # Return raw bytes (useful for Shiny)
@@ -150,21 +169,24 @@ tts_speech_clone(
 
 ### `tts_speech()`
 
-| Parameter         | Description                                            |
-|-------------------|--------------------------------------------------------|
-| `input`           | Text to convert to speech                              |
-| `voice`           | Voice name                                             |
-| `file`            | Output file path (NULL returns raw bytes)              |
-| `model`           | Model name (optional, often ignored by local servers)  |
-| `temperature`     | Sampling temperature                                   |
-| `speed`           | Playback speed multiplier                              |
-| `exaggeration`    | Chatterbox: voice exaggeration                         |
-| `cfg_weight`      | Chatterbox: CFG weight                                 |
-| `seed`            | Random seed for reproducibility                        |
-| `response_format` | Audio format (inferred from file extension if not set) |
-| `instructions`    | OpenAI: voice style instructions (e.g., "Speak cheerfully") |
+| Parameter | Backend | Description |
+|-----------|---------|-------------|
+| `input` | All | Text to convert to speech |
+| `voice` | All | Voice name or ID |
+| `file` | All | Output file path (NULL returns raw bytes) |
+| `backend` | - | "auto", "chatterbox", "openai", or "elevenlabs" |
+| `model` | OpenAI, ElevenLabs | Model name |
+| `instructions` | OpenAI | Voice style instructions |
+| `temperature` | Chatterbox | Sampling temperature |
+| `speed` | OpenAI, Chatterbox | Playback speed multiplier |
+| `exaggeration` | Chatterbox | Voice exaggeration |
+| `cfg_weight` | Chatterbox | CFG weight |
+| `stability` | ElevenLabs | Voice stability (0-1) |
+| `similarity_boost` | ElevenLabs | Similarity boost (0-1) |
+| `seed` | Chatterbox | Random seed for reproducibility |
+| `response_format` | OpenAI, Chatterbox | Audio format |
 
-### `tts_voice_upload()`
+### `tts_voice_upload()` (Chatterbox)
 
 | Parameter    | Description                     |
 |--------------|---------------------------------|
@@ -172,7 +194,7 @@ tts_speech_clone(
 | `voice_name` | Name to save the voice as       |
 | `language`   | Language code (e.g., "en", "fr")|
 
-### `tts_speech_clone()`
+### `tts_speech_clone()` (Chatterbox)
 
 | Parameter      | Description                             |
 |----------------|-----------------------------------------|
@@ -185,11 +207,19 @@ tts_speech_clone(
 | `speed`        | Playback speed multiplier               |
 | `seed`         | Random seed for reproducibility         |
 
+### Configuration functions
+
+| Function | Purpose |
+|----------|---------|
+| `set_tts_base()` | Set OpenAI-compatible API base URL |
+| `set_tts_key()` | Set OpenAI-compatible API key |
+| `set_tts_elevenlabs_key()` | Set ElevenLabs API key |
+
 ### Other functions
 
-- `tts_voices()` - List available voices
+- `tts_voices()` - List available voices (OpenAI-compatible backends)
 - `tts_languages()` - List supported languages
-- `tts_health()` - Check server health
+- `tts_health()` - Check server health (OpenAI-compatible backends)
 
 ## Dependencies
 

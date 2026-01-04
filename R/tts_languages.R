@@ -7,7 +7,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' tts_set_api_base("http://localhost:4123")
+#' set_tts_base("http://localhost:4123")
 #' languages <- tts_languages()
 #' print(languages)
 #' }

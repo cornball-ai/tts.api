@@ -12,7 +12,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' tts_set_api_base("http://localhost:4123")
+#' set_tts_base("http://localhost:4123")
 #'
 #' # Upload a voice
 #' tts_voice_upload(

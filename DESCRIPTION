@@ -4,9 +4,10 @@ Version: 0.1.0
 Authors@R:
     person("Troy", "Hernandez", role = c("aut", "cre"),
            email = "troy.hernandez@pm.me")
-Description: An R client for OpenAI-compatible Text-to-Speech
-    APIs, including OpenAI's /v1/audio/speech endpoint and local servers
-    implementing the same spec (Chatterbox, LM Studio, OpenWebUI, AnythingLLM, etc.).
+Description: An R client for Text-to-Speech APIs supporting multiple backends:
+    OpenAI-compatible APIs (OpenAI, Chatterbox, LM Studio, OpenWebUI, AnythingLLM)
+    and ElevenLabs. Provides a unified interface for speech synthesis with
+    backend-specific parameters.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -14,3 +15,5 @@ RoxygenNote: 7.3.3
 Imports:
     curl,
     jsonlite
+Suggests:
+    processx
