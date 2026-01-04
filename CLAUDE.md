@@ -1,151 +1,51 @@
-# **PACKAGE SPECIFICATION**
+# ttsapi
 
-### **Package name:** `ttsapi`
+Minimal-dependency R client for Text-to-Speech APIs.
 
-### **Purpose:**
+## Supported Backends
 
-A minimal-dependency R client for **Text-to-Speech APIs**, supporting multiple backends:
+- **OpenAI-compatible**: OpenAI, Chatterbox, LM Studio, OpenWebUI, AnythingLLM
+- **ElevenLabs**: Separate API with voice cloning and multilingual support
 
-* **OpenAI-compatible APIs**: OpenAI `/v1/audio/speech`, Chatterbox, LM Studio, OpenWebUI, AnythingLLM, etc.
-* **ElevenLabs API**: Separate API with voice cloning and multilingual support
+## Dependencies
 
-### **Dependencies:**
+**Imports:** `curl`, `jsonlite`
 
-**Imports:**
+**Suggests:** `processx`
 
-* `curl`
-* `jsonlite`
-
-**Suggests:**
-
-* `processx` (optional for long-running processes)
-
-**Excluded:**
-
-* No ffmpeg
-* No tidyverse/httr2
-* No audio concatenation logic
+**Excluded:** No ffmpeg, no tidyverse/httr2, no audio concatenation
 
 ---
 
-# **1. Exported Functions**
+## Exported Functions
 
-## **Configuration**
+### Configuration
 
-### `set_tts_base()`
+| Function | Purpose |
+|----------|---------|
+| `set_tts_base(url)` | Set OpenAI-compatible API base URL |
+| `set_tts_key(key)` | Set OpenAI-compatible API key |
+| `set_elevenlabs_key(key)` | Set ElevenLabs API key |
 
-Sets the base URL for OpenAI-compatible APIs.
+### Speech Generation
 
-```r
-set_tts_base("http://localhost:4123")  # Chatterbox
-set_tts_base("https://api.openai.com") # OpenAI
-```
+| Function | Purpose |
+|----------|---------|
+| `speech(input, voice, file, backend, ...)` | Main synthesis function |
+| `speech_clone(input, voice_file, file, ...)` | Voice cloning (Chatterbox) |
+| `voice_upload(voice_file, voice_name, ...)` | Upload voice to library (Chatterbox) |
 
-### `set_tts_key()`
+### Utilities
 
-Sets the API key for OpenAI-compatible APIs.
-
-```r
-set_tts_key(Sys.getenv("OPENAI_API_KEY"))
-```
-
-### `set_elevenlabs_key()`
-
-Sets the API key for ElevenLabs (separate from OpenAI key).
-
-```r
-set_elevenlabs_key(Sys.getenv("ELEVENLABS_API_KEY"))
-```
+| Function | Purpose |
+|----------|---------|
+| `voices()` | List available voices |
+| `languages()` | List supported languages |
+| `tts_health()` | Check server health |
 
 ---
 
-## **Speech Generation**
-
-### `speech()`
-
-Main speech synthesis function with backend switching:
-
-```r
-# OpenAI-compatible (uses set_tts_base())
-speech(input, voice, file, backend = "auto")
-
-# Explicit OpenAI (auto-configures base URL)
-speech(input, voice, file, backend = "openai")
-
-# ElevenLabs (uses own API, not OpenAI-compatible)
-speech(input, voice, file, backend = "elevenlabs")
-```
-
-**Parameters by backend:**
-
-| Parameter | OpenAI | Chatterbox | ElevenLabs |
-|-----------|--------|------------|------------|
-| `input` | Yes | Yes | Yes |
-| `voice` | Yes | Yes | voice_id |
-| `model` | tts-1, tts-1-hd | ignored | eleven_* |
-| `instructions` | Yes | No | No |
-| `temperature` | No | Yes | No |
-| `exaggeration` | No | Yes | No |
-| `cfg_weight` | No | Yes | No |
-| `stability` | No | No | Yes |
-| `similarity_boost` | No | No | Yes |
-
-### `speech_clone()`
-
-Voice cloning with file upload (Chatterbox only).
-
-### `voice_upload()`
-
-Upload voice to server library (Chatterbox only).
-
----
-
-## **Utilities**
-
-### `voices()`
-
-List available voices from OpenAI-compatible backend.
-
-### `languages()`
-
-List supported languages from backend.
-
-### `tts_health()`
-
-Check if OpenAI-compatible backend is reachable.
-
----
-
-# **2. Internal Helpers (Unexported)**
-
-### `.tts_get_api_base()` / `.tts_get_api_key()`
-
-Fetch configured OpenAI-compatible settings.
-
-### `.tts_request()` / `.tts_post_json()` / `.tts_get()`
-
-HTTP helpers for OpenAI-compatible endpoints.
-
-### `.tts_elevenlabs()`
-
-Internal handler for ElevenLabs API (different auth, different endpoints).
-
----
-
-# **3. Package Options**
-
-```r
-options(
-  ttsapi.api_base = NULL,        # OpenAI-compatible base URL
-  ttsapi.api_key = NULL,         # OpenAI-compatible API key
-  ttsapi.elevenlabs_key = NULL,  # ElevenLabs API key (separate)
-  ttsapi.timeout = 30
-)
-```
-
----
-
-# **4. Backend Architecture**
+## Backend Architecture
 
 ```
 speech(backend = ...)
@@ -164,59 +64,47 @@ speech(backend = ...)
                                          ELEVENLABS_API_KEY env var
 ```
 
+## Parameters by Backend
+
+| Parameter | OpenAI | Chatterbox | ElevenLabs |
+|-----------|--------|------------|------------|
+| `input` | Yes | Yes | Yes |
+| `voice` | Yes | Yes | voice_id |
+| `model` | tts-1, tts-1-hd | ignored | eleven_* |
+| `instructions` | Yes | No | No |
+| `temperature` | No | Yes | No |
+| `exaggeration` | No | Yes | No |
+| `cfg_weight` | No | Yes | No |
+| `stability` | No | No | Yes |
+| `similarity_boost` | No | No | Yes |
+
 ---
 
-# **5. Package Structure**
+## Package Options
 
+```r
+options(
+  ttsapi.api_base = NULL,        # OpenAI-compatible base URL
+  ttsapi.api_key = NULL,         # OpenAI-compatible API key
+  ttsapi.elevenlabs_key = NULL,  # ElevenLabs API key
+  ttsapi.timeout = 30
+)
 ```
-ttsapi/
-  DESCRIPTION
-  NAMESPACE
-  R/
-    speech.R               # Main function + .tts_elevenlabs()
-    speech_clone.R         # Voice cloning (Chatterbox)
-    voice_upload.R         # Voice upload (Chatterbox)
-    voices.R
-    languages.R
-    tts_health.R
-    set_tts_base.R
-    set_tts_key.R
-    set_elevenlabs_key.R
-    internal_request.R
-    zzz.R
-  man/
-  tests/
-```
 
 ---
 
-# **6. Error Handling**
+## Planned Backends
 
-* Never fail silently
-* Backend-specific error parsing (OpenAI vs ElevenLabs formats differ)
-* Clear instructions when configuration is missing
-
----
-
-# **7. Future: gpuctl Integration**
-
-GPU container management planned for separate `gpuctl` package.
-ttsapi remains a pure HTTP client.
-
----
-
-# **8. Planned Backends**
-
-Reference: https://github.com/jhudsl/text2speech (abandoned, use as code reference only)
+Reference: https://github.com/jhudsl/text2speech (abandoned, use as code reference)
 
 | Backend | Priority | Auth | Notes |
 |---------|----------|------|-------|
-| **Azure TTS** | Medium | API key + region | REST-based, similar pattern to ElevenLabs |
-| **Coqui TTS** | Medium | None (local) | Look for OpenAI-compatible server wrappers |
-| **Amazon Polly** | Low | AWS SigV4 | Complex auth, adds aws.signature dep |
-| **Google Cloud** | Low | OAuth/service account | Needs googleAuthR ecosystem |
+| **Azure TTS** | Medium | API key + region | REST-based, `set_azure_key(key, region)` |
+| **Coqui TTS** | Medium | None (local) | Look for OpenAI-compatible wrappers |
+| **Amazon Polly** | Low | AWS SigV4 | Complex auth |
+| **Google Cloud** | Low | OAuth | Needs googleAuthR |
 
-## Azure TTS Implementation Notes
+### Azure TTS
 
 ```
 Endpoint: https://{region}.tts.speech.microsoft.com/cognitiveservices/v1
@@ -227,14 +115,15 @@ Headers:
 Body: SSML XML
 ```
 
-Configuration pattern:
-```r
-set_tts_azure_key(key, region)
-# Stores: ttsapi.azure_key, ttsapi.azure_region
-```
-
-## Coqui TTS Notes
+### Coqui TTS
 
 - Native Coqui requires Python
-- Look for: coqui-ai/TTS Docker images with REST API
-- Or: OpenAI-compatible wrappers (would just work with set_tts_base())
+- Look for coqui-ai/TTS Docker images with REST API
+- Or OpenAI-compatible wrappers (would just work with `set_tts_base()`)
+
+---
+
+## Notes
+
+- GPU container management planned for separate `gpuctl` package
+- ttsapi remains a pure HTTP client
