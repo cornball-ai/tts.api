@@ -3,7 +3,7 @@ Title: OpenAI-Compatible Text-to-Speech API Client
 Version: 0.1.0
 Authors@R:
     person("Troy", "Hernandez", role = c("aut", "cre"),
-           email = "troy.hernandez@pm.me")
+           email = "troy@cornball.ai")
 Description: An R client for Text-to-Speech APIs supporting multiple backends:
     OpenAI-compatible APIs (OpenAI, Chatterbox, LM Studio, OpenWebUI, AnythingLLM)
     and ElevenLabs. Provides a unified interface for speech synthesis with
@@ -16,4 +16,5 @@ Imports:
     curl,
     jsonlite
 Suggests:
-    processx
+    processx,
+    gpuctl

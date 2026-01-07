@@ -62,6 +62,12 @@ speech <- function(input,
 
   backend <- match.arg(backend)
 
+  # Acquire GPU for local backends (chatterbox or auto with local base)
+  if (backend == "chatterbox" ||
+      (backend == "auto" && !grepl("openai\\.com|elevenlabs", getOption("ttsapi.api_base", "")))) {
+    .gpuctl_acquire()
+  }
+
   # Validate required parameters
   if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
     stop("'input' must be a non-empty character string", call. = FALSE)
@@ -128,20 +134,79 @@ speech <- function(input,
   }
 
   # Make request
- audio_data <- .tts_post_json("/v1/audio/speech", body, expect_binary = TRUE)
+  audio_data <- .tts_post_json("/v1/audio/speech", body, expect_binary = TRUE)
 
   # Return or write to file
   if (is.null(file)) {
     return(audio_data)
   }
 
-  tryCatch({
-    writeBin(audio_data, file)
-  }, error = function(e) {
-    stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
-  })
+  # For Chatterbox with speed adjustment, use ffmpeg post-processing
+  needs_speed_adjust <- backend == "chatterbox" && !is.null(speed) && speed != 1.0
+
+  if (needs_speed_adjust) {
+    # Write to temp file first
+    temp_file <- tempfile(fileext = paste0(".", body$response_format %||% "wav"))
+    on.exit(unlink(temp_file), add = TRUE)
+    tryCatch({
+      writeBin(audio_data, temp_file)
+    }, error = function(e) {
+      stop("Failed to write temp audio: ", e$message, call. = FALSE)
+    })
+
+    # Apply speed adjustment with ffmpeg atempo filter
+    # atempo only accepts 0.5-2.0, so chain filters for extreme values
+    .apply_speed_ffmpeg(temp_file, file, speed)
+  } else {
+    tryCatch({
+      writeBin(audio_data, file)
+    }, error = function(e) {
+      stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
+    })
+  }
 
   invisible(file)
+}
+
+#' Apply speed adjustment using ffmpeg
+#' @keywords internal
+.apply_speed_ffmpeg <- function(input_file, output_file, speed) {
+  # atempo filter only accepts 0.5-2.0, so we chain for extreme values
+  if (speed < 0.5) {
+    # Chain multiple atempo filters for very slow speeds
+    atempo_chain <- c()
+    remaining <- speed
+    while (remaining < 0.5) {
+      atempo_chain <- c(atempo_chain, "atempo=0.5")
+      remaining <- remaining / 0.5
+    }
+    atempo_chain <- c(atempo_chain, sprintf("atempo=%.4f", remaining))
+    filter <- paste(atempo_chain, collapse = ",")
+  } else if (speed > 2.0) {
+    # Chain multiple atempo filters for very fast speeds
+    atempo_chain <- c()
+    remaining <- speed
+    while (remaining > 2.0) {
+      atempo_chain <- c(atempo_chain, "atempo=2.0")
+      remaining <- remaining / 2.0
+    }
+    atempo_chain <- c(atempo_chain, sprintf("atempo=%.4f", remaining))
+    filter <- paste(atempo_chain, collapse = ",")
+  } else {
+    filter <- sprintf("atempo=%.4f", speed)
+  }
+
+  # Run ffmpeg
+  result <- system2(
+    "ffmpeg",
+    c("-y", "-i", shQuote(input_file), "-filter:a", shQuote(filter), shQuote(output_file)),
+    stdout = FALSE,
+    stderr = FALSE
+  )
+
+  if (result != 0) {
+    stop("ffmpeg speed adjustment failed with exit code ", result, call. = FALSE)
+  }
 }
 
 
