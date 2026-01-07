@@ -23,7 +23,7 @@ tts_providers <- list(
   "Chatterbox (Local)" = list(
     voices = NULL,  # Fetched dynamically from container
     env_var = NULL,
-    base_url = "http://localhost:8100"
+    base_url = "http://localhost:4123"
   ),
   "ElevenLabs" = list(
     voices = NULL,  # Fetched dynamically from API
@@ -50,13 +50,19 @@ tts_providers <- list(
 #' tts_voices("Chatterbox (Local)")
 #' }
 tts_voices <- function(provider, base_url = NULL, timeout = 2) {
-  # Get provider config
 
-config <- tts_providers[[provider]]
+  # Get provider config
+  config <- tts_providers[[provider]]
 
   # Determine base URL
   if (is.null(base_url)) {
-    base_url <- if (!is.null(config$base_url)) config$base_url else getOption("ttsapi.base")
+    # Check for environment variable overrides
+    if (provider == "Chatterbox (Local)") {
+      port <- Sys.getenv("CHATTERBOX_PORT", "4123")
+      base_url <- paste0("http://localhost:", port)
+    } else {
+      base_url <- if (!is.null(config$base_url)) config$base_url else getOption("ttsapi.base")
+    }
   }
 
   # Try to fetch voices dynamically
@@ -67,6 +73,18 @@ config <- tts_providers[[provider]]
 
     if (!is.null(voices) && length(voices) > 0) {
       return(voices)
+    }
+  }
+
+  # For Chatterbox, try reading from filesystem as fallback
+  if (provider == "Chatterbox (Local)") {
+    voices_dir <- Sys.getenv("CHATTERBOX_VOICES_DIR", "~/chatterbox-tts-api/voices")
+    voices_dir <- path.expand(voices_dir)
+    if (dir.exists(voices_dir)) {
+      files <- list.files(voices_dir, pattern = "\\.(mp3|wav)$", ignore.case = TRUE)
+      if (length(files) > 0) {
+        return(tools::file_path_sans_ext(files))
+      }
     }
   }
 
@@ -94,10 +112,18 @@ config <- tts_providers[[provider]]
       return(content)
     }
     if (is.list(content) && !is.null(content$voices)) {
-      return(unlist(content$voices))
+      voices <- content$voices
+      # Chatterbox returns voices as data.frame with name column
+      if (is.data.frame(voices) && "name" %in% names(voices)) {
+        return(voices$name)
+      }
+      # Simple array of strings
+      if (is.character(voices)) {
+        return(voices)
+      }
+      return(unlist(voices))
     }
-    if (is.data.frame(content) && "name" %in% names(content))
-{
+    if (is.data.frame(content) && "name" %in% names(content)) {
       return(content$name)
     }
   }
