@@ -18,13 +18,13 @@ devtools::install_github("cornball-ai/ttsapi")
 
 ### Chatterbox (Local, OpenAI-compatible)
 
-Clone and run [chatterbox-tts-api](https://github.com/travisvn/chatterbox-tts-api):
+Use the [cornball-ai/chatterbox-tts-api](https://github.com/cornball-ai/chatterbox-tts-api) fork:
 
 ```bash
-git clone https://github.com/travisvn/chatterbox-tts-api.git
+git clone https://github.com/cornball-ai/chatterbox-tts-api.git
 cd chatterbox-tts-api
 
-# For newer Nvidia GPUs, for CPU see the above repo
+# For newer Nvidia GPUs (Blackwell/50xx series)
 docker build -f docker/Dockerfile.blackwell -t chatterbox-tts:blackwell .
 
 docker run -d \
@@ -35,6 +35,8 @@ docker run -d \
   -v $(pwd)/voices:/voices \
   chatterbox-tts:blackwell
 ```
+
+See [upstream repo](https://github.com/travisvn/chatterbox-tts-api) for CPU and other GPU options.
 
 ### OpenAI
 
