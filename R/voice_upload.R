@@ -110,3 +110,58 @@ voice_upload <- function(voice_file, voice_name, language = NULL) {
   message("Voice '", voice_name, "' uploaded successfully")
   invisible(result)
 }
+
+#' Upload Voice to Chatterbox
+#'
+#' Uploads a voice sample directly to a local Chatterbox instance.
+#' Does not require setting the API base URL first.
+#'
+#' @param voice_file Character. Path to the voice sample file (mp3, wav).
+#' @param voice_name Character. Name to save the voice as.
+#' @param port Port for Chatterbox API (default from CHATTERBOX_PORT env var or 4123)
+#' @param timeout Timeout in seconds (default 30)
+#'
+#' @return TRUE if upload succeeded, FALSE otherwise. Does not throw errors.
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#'   # Upload a voice sample
+#'   success <- chatterbox_voice_upload("my_voice.wav", "my-voice")
+#'
+#'   if (success) {
+#'     speech("Hello!", voice = "my-voice", backend = "chatterbox")
+#'   }
+#' }
+chatterbox_voice_upload <- function(voice_file, voice_name, port = NULL, timeout = 30) {
+  # Validate parameters
+  if (!is.character(voice_file) || length(voice_file) != 1) {
+    return(FALSE)
+  }
+  if (!file.exists(voice_file)) {
+    return(FALSE)
+  }
+  if (!is.character(voice_name) || length(voice_name) != 1 || nchar(voice_name) == 0) {
+    return(FALSE)
+  }
+
+  # Get port
+  if (is.null(port)) {
+    port <- Sys.getenv("CHATTERBOX_PORT", "4123")
+  }
+
+  url <- paste0("http://localhost:", port, "/voices")
+
+  tryCatch({
+    h <- curl::new_handle()
+    curl::handle_setopt(h, timeout = timeout)
+    curl::handle_setform(h,
+      voice_name = voice_name,
+      voice_file = curl::form_file(voice_file)
+    )
+
+    res <- curl::curl_fetch_memory(url, handle = h)
+    res$status_code %in% c(200, 201)
+
+  }, error = function(e) FALSE)
+}

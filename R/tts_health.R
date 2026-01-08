@@ -1,3 +1,32 @@
+#' Check if Chatterbox Service is Available
+#'
+#' Quick check if the local Chatterbox TTS API is reachable.
+#' Returns TRUE/FALSE without throwing errors.
+#'
+#' @param port Port to check (default from CHATTERBOX_PORT env var or 4123)
+#' @param timeout Timeout in seconds (default 2)
+#' @return TRUE if service is available, FALSE otherwise
+#' @export
+#' @examples
+#' \dontrun{
+#'   if (chatterbox_available()) {
+#'     speech("Hello", voice = "default", backend = "chatterbox")
+#'   }
+#' }
+chatterbox_available <- function(port = NULL, timeout = 2) {
+  if (is.null(port)) {
+    port <- Sys.getenv("CHATTERBOX_PORT", "4123")
+  }
+  url <- paste0("http://localhost:", port, "/health")
+
+  tryCatch({
+    h <- curl::new_handle()
+    curl::handle_setopt(h, timeout = timeout)
+    res <- curl::curl_fetch_memory(url, handle = h)
+    res$status_code == 200
+  }, error = function(e) FALSE)
+}
+
 #' Check TTS API Health
 #'
 #' Checks whether the TTS backend is reachable by trying common health endpoints.

@@ -14,7 +14,7 @@
 #'   or "auto" to use configured API base.
 #' @param model Character or NULL. The model to use.
 #'   For OpenAI: "tts-1" or "tts-1-hd".
-#'   For ElevenLabs: "eleven_monolingual_v1", "eleven_multilingual_v2", etc.
+#'   For ElevenLabs: "eleven_multilingual_v2" (default), "eleven_turbo_v2_5", etc.
 #'   For Chatterbox: optional, often ignored.
 #' @param temperature Numeric or NULL. Sampling temperature for generation.
 #' @param speed Numeric or NULL. Speed multiplier for the audio.
@@ -227,7 +227,7 @@ speech <- function(input,
 
   body <- list(
     text = input,
-    model_id = model %||% "eleven_monolingual_v1",
+    model_id = model %||% "eleven_multilingual_v2",
     voice_settings = list(
       stability = stability %||% 0.5,
       similarity_boost = similarity_boost %||% 0.75
