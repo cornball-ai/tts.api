@@ -2,6 +2,9 @@
 
 export(chatterbox_available)
 export(chatterbox_voice_upload)
+export(elevenlabs_voice_delete)
+export(elevenlabs_voice_upload)
+export(elevenlabs_voices)
 export(languages)
 export(set_elevenlabs_key)
 export(set_tts_base)

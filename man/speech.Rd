@@ -37,7 +37,7 @@ or "auto" to use configured API base.}
 
 \item{model}{Character or NULL. The model to use.
 For OpenAI: "tts-1" or "tts-1-hd".
-For ElevenLabs: "eleven_monolingual_v1", "eleven_multilingual_v2", etc.
+For ElevenLabs: "eleven_multilingual_v2" (default), "eleven_turbo_v2_5", etc.
 For Chatterbox: optional, often ignored.}
 
 \item{temperature}{Numeric or NULL. Sampling temperature for generation.}
