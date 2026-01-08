@@ -118,10 +118,9 @@ speech(
 # ElevenLabs (different API, not OpenAI-compatible)
 speech(
   input = "Hello from ElevenLabs!",
-  voice = "XpDLYThV0yUAFjVTok7m",  # voice ID
+  voice = "21m00Tcm4TlvDq8ikWAM",  # Rachel voice ID
   file = "hello_eleven.mp3",
   backend = "elevenlabs",
-  model = "eleven_multilingual_v2",
   stability = 0.5,
   similarity_boost = 0.75
 )
