@@ -54,6 +54,26 @@ tts_voices <- function(provider, base_url = NULL, timeout = 2) {
   # Get provider config
   config <- tts_providers[[provider]]
 
+  # ElevenLabs has its own API that requires authentication
+  if (provider == "ElevenLabs") {
+    voices <- tryCatch({
+      v <- elevenlabs_voices()
+      if (nrow(v) > 0) {
+        # Return named vector: names are display labels, values are voice_ids
+        result <- v$voice_id
+        names(result) <- v$name
+        result
+      } else {
+        NULL
+      }
+    }, error = function(e) NULL)
+
+    if (!is.null(voices) && length(voices) > 0) {
+      return(voices)
+    }
+    return(c("default"))
+  }
+
   # Determine base URL
   if (is.null(base_url)) {
     # Check for environment variable overrides
