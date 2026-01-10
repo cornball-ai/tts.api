@@ -2,7 +2,8 @@
 #'
 #' A list of known TTS providers with their default voices and configuration.
 #'
-#' @format A named list where each element contains:
+#' @details
+#' A named list where each element contains:
 #' \describe{
 #'   \item{voices}{Character vector of default/known voice names, or NULL if dynamic}
 #'   \item{env_var}{Name of environment variable for API key, or NULL if not needed}

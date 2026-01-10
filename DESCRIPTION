@@ -10,11 +10,10 @@ Description: An R client for Text-to-Speech APIs supporting multiple backends:
     backend-specific parameters.
 License: MIT + file LICENSE
 Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports:
     curl,
     jsonlite
 Suggests:
     processx,
-    gpuctl
+    gpuctl,
+    tinytest
