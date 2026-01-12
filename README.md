@@ -10,8 +10,11 @@ Supports multiple backends:
 ## Installation
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("cornball-ai/ttsapi")
+# From CRAN (once available)
+install.packages("ttsapi")
+
+# Development version
+remotes::install_github("cornball-ai/ttsapi")
 ```
 
 ## Backend Setup

@@ -3,7 +3,11 @@
 \title{Generate Speech from Text}
 \description{Generate audio from text using various TTS backends: local Chatterbox server, OpenAI TTS API, or ElevenLabs API.}
 \usage{
-speech(input, voice, file, backend, model, temperature, speed, exaggeration, cfg_weight, stability, similarity_boost, seed, response_format, instructions)
+speech(input, voice, file = NULL, backend = c("auto", "chatterbox",
+  "openai", "elevenlabs"), model = NULL, temperature = NULL,
+  speed = NULL, exaggeration = NULL, cfg_weight = NULL,
+  stability = NULL, similarity_boost = NULL, seed = NULL,
+  response_format = NULL, instructions = NULL)
 }
 \arguments{
   \item{input}{Character. The text to convert to speech.}
