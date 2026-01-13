@@ -1,0 +1,40 @@
+\name{voice_upload}
+\alias{voice_upload}
+\title{Upload Voice to Library}
+\description{Uploads a voice sample to the server's voice library for reuse. Once uploaded, the voice can be used by name in speech().}
+\usage{
+voice_upload(voice_file, voice_name, language)
+}
+\arguments{
+  \item{voice_file}{Character. Path to the voice sample file (mp3, wav, etc.).}
+  \item{voice_name}{Character. Name to save the voice as.}
+  \item{language}{Character or NULL. Language code (e.g., "en", "fr", "es").}
+}
+\value{
+Invisibly returns the response from the server.
+}
+\examples{
+\dontrun{
+set_tts_base("http://localhost:4123")
+
+# Upload a voice
+voice_upload(
+  voice_file = "my_voice.wav",
+  voice_name = "my-custom-voice"
+)
+
+# Upload with language
+voice_upload(
+  voice_file = "french_voice.wav",
+  voice_name = "french-speaker",
+  language = "fr"
+)
+
+# Then use it by name
+speech(
+  input = "Hello with my custom voice!",
+  voice = "my-custom-voice",
+  file = "output.wav"
+)
+}
+}
