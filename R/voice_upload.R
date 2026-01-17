@@ -52,7 +52,7 @@ voice_upload <- function(voice_file, voice_name, language = NULL) {
 
   # Create form data
   h <- curl::new_handle()
-  timeout <- getOption("ttsapi.timeout", 30)
+  timeout <- getOption("tts.timeout", 30)
   curl::handle_setopt(h, timeout = timeout)
 
   # Add authorization header if needed

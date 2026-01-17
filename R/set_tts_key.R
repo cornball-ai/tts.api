@@ -14,8 +14,8 @@ set_tts_key <- function(key) {
   if (!is.character(key) || length(key) != 1) {
     stop("'key' must be a character string", call. = FALSE)
   }
-  old <- getOption("ttsapi.api_key")
-  options(ttsapi.api_key = key)
+  old <- getOption("tts.api_key")
+  options(tts.api_key = key)
   invisible(old)
 }
 
@@ -24,5 +24,5 @@ set_tts_key <- function(key) {
 #' @return Character string with the API key, or NULL if not set.
 #' @keywords internal
 .tts_get_api_key <- function() {
-  getOption("ttsapi.api_key")
+  getOption("tts.api_key")
 }

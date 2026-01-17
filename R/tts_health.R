@@ -49,7 +49,7 @@ chatterbox_available <- function(port = NULL, timeout = 2) {
 #' }
 tts_health <- function() {
   base <- .tts_get_api_base()
-  timeout <- getOption("ttsapi.timeout", 30)
+  timeout <- getOption("tts.timeout", 30)
 
   # Endpoints to try in order
   endpoints <- c("/health", "/v1/status", "/")

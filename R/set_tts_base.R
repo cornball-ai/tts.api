@@ -21,8 +21,8 @@ set_tts_base <- function(url) {
   # Remove trailing slash if present
 
   url <- sub("/$", "", url)
-  old <- getOption("ttsapi.api_base")
-  options(ttsapi.api_base = url)
+  old <- getOption("tts.api_base")
+  options(tts.api_base = url)
   invisible(old)
 }
 
@@ -31,7 +31,7 @@ set_tts_base <- function(url) {
 #' @return Character string with the API base URL.
 #' @keywords internal
 .tts_get_api_base <- function() {
-  base <- getOption("ttsapi.api_base")
+  base <- getOption("tts.api_base")
   if (is.null(base) || nchar(base) == 0) {
     stop(
       "API base URL not set. Use set_tts_base() to configure it.\n",

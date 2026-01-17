@@ -82,7 +82,7 @@ tts_voices <- function(provider, base_url = NULL, timeout = 2) {
       port <- Sys.getenv("CHATTERBOX_PORT", "4123")
       base_url <- paste0("http://localhost:", port)
     } else {
-      base_url <- if (!is.null(config$base_url)) config$base_url else getOption("ttsapi.base")
+      base_url <- if (!is.null(config$base_url)) config$base_url else getOption("tts.base")
     }
   }
 

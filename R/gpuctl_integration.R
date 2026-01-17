@@ -1,7 +1,7 @@
-# gpuctl integration for ttsapi
+# gpu.ctl integration for tts.api
 #
-# Optionally acquires GPU resources before API calls when gpuctl is available.
-# Enable with: options(ttsapi.gpuctl = TRUE)
+# Optionally acquires GPU resources before API calls when gpu.ctl is available.
+# Enable with: options(tts.gpuctl = TRUE)
 
 # Service configuration for Chatterbox TTS
 .tts_gpu_service <- list(
@@ -12,23 +12,23 @@
   health = "/health"
 )
 
-#' Check if gpuctl integration is enabled
+#' Check if gpu.ctl integration is enabled
 #' @noRd
 .gpuctl_enabled <- function() {
-  isTRUE(getOption("ttsapi.gpuctl", FALSE)) &&
-    requireNamespace("gpuctl", quietly = TRUE)
+  isTRUE(getOption("tts.gpuctl", FALSE)) &&
+    requireNamespace("gpu.ctl", quietly = TRUE)
 }
 
-#' Register ttsapi service with gpuctl
+#' Register tts.api service with gpu.ctl
 #' @noRd
 .gpuctl_register_service <- function() {
   if (!.gpuctl_enabled()) return(invisible(FALSE))
 
   tryCatch({
     # Only register if not already registered
-    existing <- gpuctl::gpu_services()
+    existing <- gpu.ctl::gpu_services()
     if (!.tts_gpu_service$name %in% existing$name) {
-      gpuctl::gpu_register(
+      gpu.ctl::gpu_register(
         name = .tts_gpu_service$name,
         port = .tts_gpu_service$port,
         vram = .tts_gpu_service$vram,
@@ -42,9 +42,9 @@
   invisible(TRUE)
 }
 
-#' Acquire GPU for chatterbox if gpuctl is enabled
+#' Acquire GPU for chatterbox if gpu.ctl is enabled
 #'
-#' @return Invisible TRUE if acquired, FALSE if not using gpuctl
+#' @return Invisible TRUE if acquired, FALSE if not using gpu.ctl
 #' @noRd
 .gpuctl_acquire <- function() {
   if (!.gpuctl_enabled()) return(invisible(FALSE))
@@ -52,10 +52,10 @@
   .gpuctl_register_service()
 
   tryCatch({
-    gpuctl::gpu_acquire(.tts_gpu_service$name)
+    gpu.ctl::gpu_acquire(.tts_gpu_service$name)
     invisible(TRUE)
   }, error = function(e) {
-    warning("gpuctl: ", e$message, call. = FALSE)
+    warning("gpu.ctl: ", e$message, call. = FALSE)
     invisible(FALSE)
   })
 }

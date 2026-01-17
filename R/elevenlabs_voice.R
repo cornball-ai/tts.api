@@ -59,7 +59,7 @@ elevenlabs_voice_upload <- function(files,
   # Get API key
   api_key <- Sys.getenv("ELEVENLABS_API_KEY")
   if (api_key == "") {
-    api_key <- getOption("ttsapi.elevenlabs_key")
+    api_key <- getOption("tts.elevenlabs_key")
   }
   if (is.null(api_key) || api_key == "") {
     stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_elevenlabs_key()", call. = FALSE)
@@ -130,7 +130,7 @@ elevenlabs_voice_upload <- function(files,
 elevenlabs_voices <- function() {
   api_key <- Sys.getenv("ELEVENLABS_API_KEY")
   if (api_key == "") {
-    api_key <- getOption("ttsapi.elevenlabs_key")
+    api_key <- getOption("tts.elevenlabs_key")
   }
   if (is.null(api_key) || api_key == "") {
     stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_elevenlabs_key()", call. = FALSE)
@@ -196,7 +196,7 @@ elevenlabs_voice_delete <- function(voice_id) {
 
   api_key <- Sys.getenv("ELEVENLABS_API_KEY")
   if (api_key == "") {
-    api_key <- getOption("ttsapi.elevenlabs_key")
+    api_key <- getOption("tts.elevenlabs_key")
   }
   if (is.null(api_key) || api_key == "") {
     stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_elevenlabs_key()", call. = FALSE)

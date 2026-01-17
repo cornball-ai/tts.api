@@ -1,3 +1,3 @@
 if (requireNamespace("tinytest", quietly = TRUE)) {
-  tinytest::test_package("ttsapi")
+  tinytest::test_package("tts.api")
 }

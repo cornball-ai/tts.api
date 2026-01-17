@@ -64,7 +64,7 @@ speech <- function(input,
 
   # Acquire GPU for local backends (chatterbox or auto with local base)
   if (backend == "chatterbox" ||
-      (backend == "auto" && !grepl("openai\\.com|elevenlabs", getOption("ttsapi.api_base", "")))) {
+      (backend == "auto" && !grepl("openai\\.com|elevenlabs", getOption("tts.api_base", "")))) {
     .gpuctl_acquire()
   }
 
@@ -90,17 +90,17 @@ speech <- function(input,
 
   # Handle OpenAI backend switching
   if (backend == "openai") {
-    old_base <- getOption("ttsapi.api_base")
-    old_key <- getOption("ttsapi.api_key")
+    old_base <- getOption("tts.api_base")
+    old_key <- getOption("tts.api_key")
     on.exit({
-      options(ttsapi.api_base = old_base, ttsapi.api_key = old_key)
+      options(tts.api_base = old_base, tts.api_key = old_key)
     }, add = TRUE)
 
-    options(ttsapi.api_base = "https://api.openai.com")
+    options(tts.api_base = "https://api.openai.com")
     if (is.null(old_key) || !grepl("^sk-", old_key %||% "")) {
       api_key <- Sys.getenv("OPENAI_API_KEY")
       if (nchar(api_key) > 0) {
-        options(ttsapi.api_key = api_key)
+        options(tts.api_key = api_key)
       }
     }
 
@@ -217,7 +217,7 @@ speech <- function(input,
 
   api_key <- Sys.getenv("ELEVENLABS_API_KEY")
   if (api_key == "") {
-    api_key <- getOption("ttsapi.elevenlabs_key")
+    api_key <- getOption("tts.elevenlabs_key")
   }
   if (is.null(api_key) || api_key == "") {
     stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_elevenlabs_key()", call. = FALSE)
@@ -243,7 +243,7 @@ speech <- function(input,
   curl::handle_setopt(h,
     post = TRUE,
     postfields = jsonlite::toJSON(body, auto_unbox = TRUE),
-    timeout = getOption("ttsapi.timeout", 120)
+    timeout = getOption("tts.timeout", 120)
   )
 
   response <- tryCatch(

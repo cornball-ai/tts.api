@@ -1,4 +1,4 @@
-Package: ttsapi
+Package: tts.api
 Title: OpenAI-Compatible Text-to-Speech API Client
 Version: 0.1.0
 Authors@R:
@@ -10,12 +10,12 @@ Description: An R client for Text-to-Speech APIs supporting multiple backends:
     backend-specific parameters.
 License: MIT + file LICENSE
 Encoding: UTF-8
-URL: https://github.com/cornball-ai/ttsapi
-BugReports: https://github.com/cornball-ai/ttsapi/issues
+URL: https://github.com/cornball-ai/tts.api
+BugReports: https://github.com/cornball-ai/tts.api/issues
 Imports:
     curl,
     jsonlite
 Suggests:
     processx,
-    gpuctl,
+    gpu.ctl,
     tinytest

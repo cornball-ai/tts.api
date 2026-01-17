@@ -1,4 +1,4 @@
-# ttsapi
+# tts.api
 
 An R client for Text-to-Speech APIs.
 
@@ -11,10 +11,10 @@ Supports multiple backends:
 
 ``` r
 # From CRAN (once available)
-install.packages("ttsapi")
+install.packages("tts.api")
 
 # Development version
-remotes::install_github("cornball-ai/ttsapi")
+remotes::install_github("cornball-ai/tts.api")
 ```
 
 ## Backend Setup
@@ -58,7 +58,7 @@ See [upstream repo](https://github.com/travisvn/chatterbox-tts-api) for CPU and 
 ### Setup
 
 ``` r
-library(ttsapi)
+library(tts.api)
 
 # For local Chatterbox server (OpenAI-compatible)
 set_tts_base("http://localhost:4123")
