@@ -111,7 +111,7 @@ speech(
 # Chatterbox with custom parameters
 speech(
   input = "Hello with my custom voice!",
-  voice = "FatherChristmas",
+  voice = "MyCustomVoice",
   file = "speech.wav",
   temperature = 0.9,
   exaggeration = 1.2,
