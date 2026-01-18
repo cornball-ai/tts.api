@@ -1,4 +1,4 @@
-# ttsapi 0.1.0
+# tts.api 0.1.0
 
 * Initial CRAN release
 * Support for OpenAI-compatible text-to-speech APIs

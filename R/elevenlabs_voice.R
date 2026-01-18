@@ -36,7 +36,6 @@ elevenlabs_voice_upload <- function(files,
                                      labels = NULL) {
 
   # Validate inputs
-
   if (!is.character(files) || length(files) == 0) {
     stop("'files' must be a non-empty character vector of file paths", call. = FALSE)
   }
@@ -56,22 +55,8 @@ elevenlabs_voice_upload <- function(files,
     stop("'name' must be a non-empty character string", call. = FALSE)
   }
 
-  # Get API key
-  api_key <- Sys.getenv("ELEVENLABS_API_KEY")
-  if (api_key == "") {
-    api_key <- getOption("tts.elevenlabs_key")
-  }
-  if (is.null(api_key) || api_key == "") {
-    stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_elevenlabs_key()", call. = FALSE)
-  }
-
-  url <- "https://api.elevenlabs.io/v1/voices/add"
-
   # Build multipart form
   h <- curl::new_handle()
-  curl::handle_setheaders(h, "xi-api-key" = api_key)
-
-  # Create form data
   form_data <- list(name = name)
 
   if (!is.null(description)) {
@@ -91,21 +76,7 @@ elevenlabs_voice_upload <- function(files,
 
   curl::handle_setform(h, .list = form_data)
 
-  response <- tryCatch(
-    curl::curl_fetch_memory(url, handle = h),
-    error = function(e) {
-      stop("ElevenLabs connection failed: ", e$message, call. = FALSE)
-    }
-  )
-
-  if (response$status_code >= 400) {
-    err_msg <- tryCatch({
-      err <- jsonlite::fromJSON(rawToChar(response$content))
-      err$detail$message %||% err$detail %||% rawToChar(response$content)
-    }, error = function(e) rawToChar(response$content))
-    stop("ElevenLabs API error (", response$status_code, "): ", err_msg, call. = FALSE)
-  }
-
+  response <- .elevenlabs_request("voices/add", handle = h)
   result <- jsonlite::fromJSON(rawToChar(response$content))
 
   list(
@@ -128,34 +99,7 @@ elevenlabs_voice_upload <- function(files,
 #' print(voices)
 #' }
 elevenlabs_voices <- function() {
-  api_key <- Sys.getenv("ELEVENLABS_API_KEY")
-  if (api_key == "") {
-    api_key <- getOption("tts.elevenlabs_key")
-  }
-  if (is.null(api_key) || api_key == "") {
-    stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_elevenlabs_key()", call. = FALSE)
-  }
-
-  url <- "https://api.elevenlabs.io/v1/voices"
-
-  h <- curl::new_handle()
-  curl::handle_setheaders(h, "xi-api-key" = api_key)
-
-  response <- tryCatch(
-    curl::curl_fetch_memory(url, handle = h),
-    error = function(e) {
-      stop("ElevenLabs connection failed: ", e$message, call. = FALSE)
-    }
-  )
-
-  if (response$status_code >= 400) {
-    err_msg <- tryCatch({
-      err <- jsonlite::fromJSON(rawToChar(response$content))
-      err$detail$message %||% err$detail %||% rawToChar(response$content)
-    }, error = function(e) rawToChar(response$content))
-    stop("ElevenLabs API error (", response$status_code, "): ", err_msg, call. = FALSE)
-  }
-
+  response <- .elevenlabs_request("voices")
   result <- jsonlite::fromJSON(rawToChar(response$content))
 
   if (length(result$voices) == 0) {
@@ -194,34 +138,6 @@ elevenlabs_voice_delete <- function(voice_id) {
     stop("'voice_id' must be a non-empty character string", call. = FALSE)
   }
 
-  api_key <- Sys.getenv("ELEVENLABS_API_KEY")
-  if (api_key == "") {
-    api_key <- getOption("tts.elevenlabs_key")
-  }
-  if (is.null(api_key) || api_key == "") {
-    stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_elevenlabs_key()", call. = FALSE)
-  }
-
-  url <- paste0("https://api.elevenlabs.io/v1/voices/", voice_id)
-
-  h <- curl::new_handle()
-  curl::handle_setheaders(h, "xi-api-key" = api_key)
-  curl::handle_setopt(h, customrequest = "DELETE")
-
-  response <- tryCatch(
-    curl::curl_fetch_memory(url, handle = h),
-    error = function(e) {
-      stop("ElevenLabs connection failed: ", e$message, call. = FALSE)
-    }
-  )
-
-  if (response$status_code >= 400) {
-    err_msg <- tryCatch({
-      err <- jsonlite::fromJSON(rawToChar(response$content))
-      err$detail$message %||% err$detail %||% rawToChar(response$content)
-    }, error = function(e) rawToChar(response$content))
-    stop("ElevenLabs API error (", response$status_code, "): ", err_msg, call. = FALSE)
-  }
-
+  .elevenlabs_request(paste0("voices/", voice_id), method = "DELETE")
   invisible(TRUE)
 }

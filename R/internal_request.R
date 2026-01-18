@@ -91,3 +91,58 @@
 .tts_get <- function(endpoint) {
   .tts_request(endpoint, method = "GET", expect_binary = FALSE)
 }
+
+
+#' Get ElevenLabs API Key
+#'
+#' @return Character. The API key.
+#' @keywords internal
+.elevenlabs_api_key <- function() {
+  api_key <- Sys.getenv("ELEVENLABS_API_KEY")
+  if (api_key == "") {
+    api_key <- getOption("tts.elevenlabs_key")
+  }
+  if (is.null(api_key) || api_key == "") {
+    stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_elevenlabs_key()", call. = FALSE)
+  }
+  api_key
+}
+
+
+#' Make an HTTP Request to the ElevenLabs API
+#'
+#' @param endpoint Character. The API endpoint (e.g., "voices").
+#' @param method Character. HTTP method ("GET", "POST", or "DELETE").
+#' @param handle curl handle or NULL. Pre-configured handle for multipart forms.
+#' @return curl response object.
+#' @keywords internal
+.elevenlabs_request <- function(endpoint, method = "GET", handle = NULL) {
+  url <- paste0("https://api.elevenlabs.io/v1/", endpoint)
+
+  if (is.null(handle)) {
+    handle <- curl::new_handle()
+  }
+
+  curl::handle_setheaders(handle, "xi-api-key" = .elevenlabs_api_key())
+
+  if (method == "DELETE") {
+    curl::handle_setopt(handle, customrequest = "DELETE")
+  }
+
+  response <- tryCatch(
+    curl::curl_fetch_memory(url, handle = handle),
+    error = function(e) {
+      stop("ElevenLabs connection failed: ", e$message, call. = FALSE)
+    }
+  )
+
+  if (response$status_code >= 400) {
+    err_msg <- tryCatch({
+      err <- jsonlite::fromJSON(rawToChar(response$content))
+      err$detail$message %||% err$detail %||% rawToChar(response$content)
+    }, error = function(e) rawToChar(response$content))
+    stop("ElevenLabs API error (", response$status_code, "): ", err_msg, call. = FALSE)
+  }
+
+  response
+}
