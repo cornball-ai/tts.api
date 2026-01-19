@@ -16,20 +16,20 @@
 #' tts_providers[["OpenAI"]]$voices
 tts_providers <- list(
   "OpenAI" = list(
-    voices = c("alloy", "ash", "coral", "echo", "fable", "onyx", "nova", "sage", "shimmer"),
-    env_var = "OPENAI_API_KEY",
-    base_url = "https://api.openai.com"
+  voices = c("alloy", "ash", "coral", "echo", "fable", "onyx", "nova", "sage", "shimmer"),
+  env_var = "OPENAI_API_KEY",
+  base_url = "https://api.openai.com"
   ),
 
   "Chatterbox (Local)" = list(
-    voices = NULL,  # Fetched dynamically from container
-    env_var = NULL,
-    base_url = "http://localhost:4123"
+  voices = NULL, # Fetched dynamically from container
+  env_var = NULL,
+  base_url = "http://localhost:4123"
   ),
   "ElevenLabs" = list(
-    voices = NULL,  # Fetched dynamically from API
-    env_var = "ELEVENLABS_API_KEY",
-    base_url = "https://api.elevenlabs.io"
+  voices = NULL, # Fetched dynamically from API
+  env_var = "ELEVENLABS_API_KEY",
+  base_url = "https://api.elevenlabs.io"
   )
 )
 
@@ -50,7 +50,11 @@ tts_providers <- list(
 #' tts_voices("OpenAI")
 #' tts_voices("Chatterbox (Local)")
 #' }
-tts_voices <- function(provider, base_url = NULL, timeout = 2) {
+tts_voices <- function(
+  provider,
+  base_url = NULL,
+  timeout = 2
+) {
 
   # Get provider config
   config <- tts_providers[[provider]]
@@ -58,16 +62,16 @@ tts_voices <- function(provider, base_url = NULL, timeout = 2) {
   # ElevenLabs has its own API that requires authentication
   if (provider == "ElevenLabs") {
     voices <- tryCatch({
-      v <- elevenlabs_voices()
-      if (nrow(v) > 0) {
-        # Return named vector: names are display labels, values are voice_ids
-        result <- v$voice_id
-        names(result) <- v$name
-        result
-      } else {
-        NULL
-      }
-    }, error = function(e) NULL)
+        v <- elevenlabs_voices()
+        if (nrow(v) > 0) {
+          # Return named vector: names are display labels, values are voice_ids
+          result <- v$voice_id
+          names(result) <- v$name
+          result
+        } else {
+          NULL
+        }
+      }, error = function(e) NULL)
 
     if (!is.null(voices) && length(voices) > 0) {
       return(voices)
@@ -82,15 +86,19 @@ tts_voices <- function(provider, base_url = NULL, timeout = 2) {
       port <- Sys.getenv("CHATTERBOX_PORT", "4123")
       base_url <- paste0("http://localhost:", port)
     } else {
-      base_url <- if (!is.null(config$base_url)) config$base_url else getOption("tts.base")
+      if (!is.null(config$base_url)) {
+        base_url <- config$base_url
+      } else {
+        base_url <- getOption("tts.base")
+      }
     }
   }
 
   # Try to fetch voices dynamically
   if (!is.null(base_url)) {
     voices <- tryCatch({
-      .fetch_voices_from_api(base_url, timeout)
-    }, error = function(e) NULL)
+        .fetch_voices_from_api(base_url, timeout)
+      }, error = function(e) NULL)
 
     if (!is.null(voices) && length(voices) > 0) {
       return(voices)
@@ -120,12 +128,15 @@ tts_voices <- function(provider, base_url = NULL, timeout = 2) {
 
 #' Fetch voices from API
 #' @keywords internal
-.fetch_voices_from_api <- function(base_url, timeout = 2) {
+.fetch_voices_from_api <- function(
+  base_url,
+  timeout = 2
+) {
   # Try /voices endpoint (Chatterbox style)
   url <- paste0(base_url, "/voices")
   res <- tryCatch({
-    curl::curl_fetch_memory(url, handle = curl::new_handle(timeout = timeout))
-  }, error = function(e) NULL)
+      curl::curl_fetch_memory(url, handle = curl::new_handle(timeout = timeout))
+    }, error = function(e) NULL)
 
   if (!is.null(res) && res$status_code == 200) {
     content <- jsonlite::fromJSON(rawToChar(res$content))
@@ -152,8 +163,8 @@ tts_voices <- function(provider, base_url = NULL, timeout = 2) {
   # Try /v1/audio/voices endpoint (OpenAI style)
   url <- paste0(base_url, "/v1/audio/voices")
   res <- tryCatch({
-    curl::curl_fetch_memory(url, handle = curl::new_handle(timeout = timeout))
-  }, error = function(e) NULL)
+      curl::curl_fetch_memory(url, handle = curl::new_handle(timeout = timeout))
+    }, error = function(e) NULL)
 
   if (!is.null(res) && res$status_code == 200) {
     content <- jsonlite::fromJSON(rawToChar(res$content))
@@ -170,3 +181,4 @@ tts_voices <- function(provider, base_url = NULL, timeout = 2) {
 
   NULL
 }
+

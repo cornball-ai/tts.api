@@ -34,7 +34,11 @@
 #'   file = "output.wav"
 #' )
 #' }
-voice_upload <- function(voice_file, voice_name, language = NULL) {
+voice_upload <- function(
+  voice_file,
+  voice_name,
+  language = NULL
+) {
   # Validate parameters
   if (!is.character(voice_file) || length(voice_file) != 1) {
     stop("'voice_file' must be a character string", call. = FALSE)
@@ -85,19 +89,19 @@ voice_upload <- function(voice_file, voice_name, language = NULL) {
   status <- response$status_code
   if (status >= 400) {
     err_msg <- tryCatch({
-      err <- jsonlite::fromJSON(rawToChar(response$content))
-      if (!is.null(err$error$message)) {
-        err$error$message
-      } else if (!is.null(err$error)) {
-        as.character(err$error)
-      } else if (!is.null(err$detail)) {
-        as.character(err$detail)
-      } else {
+        err <- jsonlite::fromJSON(rawToChar(response$content))
+        if (!is.null(err$error$message)) {
+          err$error$message
+        } else if (!is.null(err$error)) {
+          as.character(err$error)
+        } else if (!is.null(err$detail)) {
+          as.character(err$detail)
+        } else {
+          rawToChar(response$content)
+        }
+      }, error = function(e) {
         rawToChar(response$content)
-      }
-    }, error = function(e) {
-      rawToChar(response$content)
-    })
+      })
     stop("API error (", status, "): ", err_msg, call. = FALSE)
   }
 
@@ -133,7 +137,12 @@ voice_upload <- function(voice_file, voice_name, language = NULL) {
 #'     speech("Hello!", voice = "my-voice", backend = "chatterbox")
 #'   }
 #' }
-chatterbox_voice_upload <- function(voice_file, voice_name, port = NULL, timeout = 30) {
+chatterbox_voice_upload <- function(
+  voice_file,
+  voice_name,
+  port = NULL,
+  timeout = 30
+) {
   # Validate parameters
   if (!is.character(voice_file) || length(voice_file) != 1) {
     return(FALSE)
@@ -153,15 +162,16 @@ chatterbox_voice_upload <- function(voice_file, voice_name, port = NULL, timeout
   url <- paste0("http://localhost:", port, "/voices")
 
   tryCatch({
-    h <- curl::new_handle()
-    curl::handle_setopt(h, timeout = timeout)
-    curl::handle_setform(h,
+      h <- curl::new_handle()
+      curl::handle_setopt(h, timeout = timeout)
+      curl::handle_setform(h,
       voice_name = voice_name,
       voice_file = curl::form_file(voice_file)
-    )
+      )
 
-    res <- curl::curl_fetch_memory(url, handle = h)
-    res$status_code %in% c(200, 201)
+      res <- curl::curl_fetch_memory(url, handle = h)
+      res$status_code %in% c(200, 201)
 
-  }, error = function(e) FALSE)
+    }, error = function(e) FALSE)
 }
+

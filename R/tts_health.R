@@ -13,18 +13,21 @@
 #'     speech("Hello", voice = "default", backend = "chatterbox")
 #'   }
 #' }
-chatterbox_available <- function(port = NULL, timeout = 2) {
+chatterbox_available <- function(
+  port = NULL,
+  timeout = 2
+) {
   if (is.null(port)) {
     port <- Sys.getenv("CHATTERBOX_PORT", "4123")
   }
   url <- paste0("http://localhost:", port, "/health")
 
   tryCatch({
-    h <- curl::new_handle()
-    curl::handle_setopt(h, timeout = timeout)
-    res <- curl::curl_fetch_memory(url, handle = h)
-    res$status_code == 200
-  }, error = function(e) FALSE)
+      h <- curl::new_handle()
+      curl::handle_setopt(h, timeout = timeout)
+      res <- curl::curl_fetch_memory(url, handle = h)
+      res$status_code == 200
+    }, error = function(e) FALSE)
 }
 
 #' Check TTS API Health
@@ -71,7 +74,11 @@ tts_health <- function() {
 
 #' Try a single health endpoint
 #' @keywords internal
-.try_health_endpoint <- function(base, endpoint, timeout) {
+.try_health_endpoint <- function(
+  base,
+  endpoint,
+  timeout
+) {
   url <- paste0(base, endpoint)
   h <- curl::new_handle()
   curl::handle_setopt(h, timeout = timeout)
@@ -88,7 +95,7 @@ tts_health <- function() {
       ok = FALSE,
       status = paste("Connection failed:", response$error),
       raw = NULL
-    ))
+      ))
   }
 
   status <- response$status_code
@@ -101,7 +108,7 @@ tts_health <- function() {
       ok = TRUE,
       status = paste("OK (", endpoint, ")", sep = ""),
       raw = raw_content
-    ))
+      ))
   }
 
   list(
@@ -110,3 +117,4 @@ tts_health <- function() {
     raw = NULL
   )
 }
+

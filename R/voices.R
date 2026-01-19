@@ -46,7 +46,8 @@ voices <- function() {
 
   # No voice listing available
   message("Voice listing not available from this server.\n",
-          "The server may not support voice enumeration.\n",
-          "Check your server's documentation for available voices.")
+    "The server may not support voice enumeration.\n",
+    "Check your server's documentation for available voices.")
   invisible(NULL)
 }
+

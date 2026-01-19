@@ -17,3 +17,4 @@ set_elevenlabs_key <- function(api_key) {
   options(tts.elevenlabs_key = api_key)
   invisible(api_key)
 }
+

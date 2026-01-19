@@ -16,7 +16,7 @@
 #' @noRd
 .gpuctl_enabled <- function() {
   isTRUE(getOption("tts.gpuctl", FALSE)) &&
-    requireNamespace("gpu.ctl", quietly = TRUE)
+  requireNamespace("gpu.ctl", quietly = TRUE)
 }
 
 #' Register tts.api service with gpu.ctl
@@ -25,20 +25,20 @@
   if (!.gpuctl_enabled()) return(invisible(FALSE))
 
   tryCatch({
-    # Only register if not already registered
-    existing <- gpu.ctl::gpu_services()
-    if (!.tts_gpu_service$name %in% existing$name) {
-      gpu.ctl::gpu_register(
+      # Only register if not already registered
+      existing <- gpu.ctl::gpu_services()
+      if (!.tts_gpu_service$name %in% existing$name) {
+        gpu.ctl::gpu_register(
         name = .tts_gpu_service$name,
         port = .tts_gpu_service$port,
         vram = .tts_gpu_service$vram,
         container = .tts_gpu_service$container,
         health_endpoint = .tts_gpu_service$health
-      )
-    }
-  }, error = function(e) {
-    # Silently ignore registration errors
-  })
+        )
+      }
+    }, error = function(e) {
+      # Silently ignore registration errors
+    })
   invisible(TRUE)
 }
 
@@ -52,10 +52,11 @@
   .gpuctl_register_service()
 
   tryCatch({
-    gpu.ctl::gpu_acquire(.tts_gpu_service$name)
-    invisible(TRUE)
-  }, error = function(e) {
-    warning("gpu.ctl: ", e$message, call. = FALSE)
-    invisible(FALSE)
-  })
+      gpu.ctl::gpu_acquire(.tts_gpu_service$name)
+      invisible(TRUE)
+    }, error = function(e) {
+      warning("gpu.ctl: ", e$message, call. = FALSE)
+      invisible(FALSE)
+    })
 }
+

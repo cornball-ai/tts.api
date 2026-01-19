@@ -29,11 +29,13 @@
 #'   remove_background_noise = TRUE
 #' )
 #' }
-elevenlabs_voice_upload <- function(files,
-                                     name,
-                                     description = NULL,
-                                     remove_background_noise = FALSE,
-                                     labels = NULL) {
+elevenlabs_voice_upload <- function(
+  files,
+  name,
+  description = NULL,
+  remove_background_noise = FALSE,
+  labels = NULL
+) {
 
   # Validate inputs
   if (!is.character(files) || length(files) == 0) {
@@ -46,7 +48,7 @@ elevenlabs_voice_upload <- function(files,
     if (!file.exists(f)) {
       stop("File not found: ", f, call. = FALSE)
     }
-    if (file.info(f)$size > 10 * 1024 * 1024) {
+    if (file.info(f) $size > 10 * 1024 * 1024) {
       stop("File exceeds 10MB limit: ", f, call. = FALSE)
     }
   }
@@ -85,7 +87,6 @@ elevenlabs_voice_upload <- function(files,
   )
 }
 
-
 #' List ElevenLabs Voices
 #'
 #' Get all voices available in your ElevenLabs account.
@@ -108,7 +109,7 @@ elevenlabs_voices <- function() {
       name = character(),
       category = character(),
       stringsAsFactors = FALSE
-    ))
+      ))
   }
 
   data.frame(
@@ -118,7 +119,6 @@ elevenlabs_voices <- function() {
     stringsAsFactors = FALSE
   )
 }
-
 
 #' Delete ElevenLabs Voice
 #'
@@ -141,3 +141,4 @@ elevenlabs_voice_delete <- function(voice_id) {
   .elevenlabs_request(paste0("voices/", voice_id), method = "DELETE")
   invisible(TRUE)
 }
+

@@ -28,14 +28,16 @@
 #'   exaggeration = 0.8
 #' )
 #' }
-speech_clone <- function(input,
-                             voice_file,
-                             file = NULL,
-                             exaggeration = NULL,
-                             temperature = NULL,
-                             cfg_weight = NULL,
-                             speed = NULL,
-                             seed = NULL) {
+speech_clone <- function(
+  input,
+  voice_file,
+  file = NULL,
+  exaggeration = NULL,
+  temperature = NULL,
+  cfg_weight = NULL,
+  speed = NULL,
+  seed = NULL
+) {
   # Validate required parameters
   if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
     stop("'input' must be a non-empty character string", call. = FALSE)
@@ -88,19 +90,19 @@ speech_clone <- function(input,
   status <- response$status_code
   if (status >= 400) {
     err_msg <- tryCatch({
-      err <- jsonlite::fromJSON(rawToChar(response$content))
-      if (!is.null(err$error$message)) {
-        err$error$message
-      } else if (!is.null(err$error)) {
-        as.character(err$error)
-      } else if (!is.null(err$detail)) {
-        as.character(err$detail)
-      } else {
+        err <- jsonlite::fromJSON(rawToChar(response$content))
+        if (!is.null(err$error$message)) {
+          err$error$message
+        } else if (!is.null(err$error)) {
+          as.character(err$error)
+        } else if (!is.null(err$detail)) {
+          as.character(err$detail)
+        } else {
+          rawToChar(response$content)
+        }
+      }, error = function(e) {
         rawToChar(response$content)
-      }
-    }, error = function(e) {
-      rawToChar(response$content)
-    })
+      })
     stop("API error (", status, "): ", err_msg, call. = FALSE)
   }
 
@@ -113,10 +115,11 @@ speech_clone <- function(input,
 
   # Write to file
   tryCatch({
-    writeBin(audio_data, file)
-  }, error = function(e) {
-    stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
-  })
+      writeBin(audio_data, file)
+    }, error = function(e) {
+      stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
+    })
 
   invisible(file)
 }
+

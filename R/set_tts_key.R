@@ -26,3 +26,4 @@ set_tts_key <- function(key) {
 .tts_get_api_key <- function() {
   getOption("tts.api_key")
 }
+

@@ -16,10 +16,11 @@ languages <- function() {
     .tts_get("/languages"),
     error = function(e) {
       message("Language listing not available from this server.\n",
-              "Error: ", e$message)
+      "Error: ", e$message)
       return(NULL)
     }
   )
 
   result
 }
+
