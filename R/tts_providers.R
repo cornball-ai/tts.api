@@ -16,20 +16,20 @@
 #' tts_providers[["OpenAI"]]$voices
 tts_providers <- list(
   "OpenAI" = list(
-  voices = c("alloy", "ash", "coral", "echo", "fable", "onyx", "nova", "sage", "shimmer"),
-  env_var = "OPENAI_API_KEY",
-  base_url = "https://api.openai.com"
+    voices = c("alloy", "ash", "coral", "echo", "fable", "onyx", "nova", "sage", "shimmer"),
+    env_var = "OPENAI_API_KEY",
+    base_url = "https://api.openai.com"
   ),
 
   "Chatterbox (Local)" = list(
-  voices = NULL, # Fetched dynamically from container
-  env_var = NULL,
-  base_url = "http://localhost:4123"
+    voices = NULL, # Fetched dynamically from container
+    env_var = NULL,
+    base_url = "http://localhost:4123"
   ),
   "ElevenLabs" = list(
-  voices = NULL, # Fetched dynamically from API
-  env_var = "ELEVENLABS_API_KEY",
-  base_url = "https://api.elevenlabs.io"
+    voices = NULL, # Fetched dynamically from API
+    env_var = "ELEVENLABS_API_KEY",
+    base_url = "https://api.elevenlabs.io"
   )
 )
 

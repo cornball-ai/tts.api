@@ -165,8 +165,8 @@ chatterbox_voice_upload <- function(
       h <- curl::new_handle()
       curl::handle_setopt(h, timeout = timeout)
       curl::handle_setform(h,
-      voice_name = voice_name,
-      voice_file = curl::form_file(voice_file)
+        voice_name = voice_name,
+        voice_file = curl::form_file(voice_file)
       )
 
       res <- curl::curl_fetch_memory(url, handle = h)

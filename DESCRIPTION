@@ -16,6 +16,8 @@ Imports:
     curl,
     jsonlite
 Suggests:
-    processx,
+    fal.api,
     gpu.ctl,
+    processx,
     tinytest
+RoxygenNote: 7.3.3

@@ -48,7 +48,7 @@ elevenlabs_voice_upload <- function(
     if (!file.exists(f)) {
       stop("File not found: ", f, call. = FALSE)
     }
-    if (file.info(f) $size > 10 * 1024 * 1024) {
+    if (file.info(f)$size > 10 * 1024 * 1024) {
       stop("File exceeds 10MB limit: ", f, call. = FALSE)
     }
   }
@@ -105,10 +105,10 @@ elevenlabs_voices <- function() {
 
   if (length(result$voices) == 0) {
     return(data.frame(
-      voice_id = character(),
-      name = character(),
-      category = character(),
-      stringsAsFactors = FALSE
+        voice_id = character(),
+        name = character(),
+        category = character(),
+        stringsAsFactors = FALSE
       ))
   }
 

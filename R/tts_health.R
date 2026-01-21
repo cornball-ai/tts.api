@@ -92,9 +92,9 @@ tts_health <- function() {
 
   if (!is.null(response$error)) {
     return(list(
-      ok = FALSE,
-      status = paste("Connection failed:", response$error),
-      raw = NULL
+        ok = FALSE,
+        status = paste("Connection failed:", response$error),
+        raw = NULL
       ))
   }
 
@@ -105,9 +105,9 @@ tts_health <- function() {
       error = function(e) rawToChar(response$content)
     )
     return(list(
-      ok = TRUE,
-      status = paste("OK (", endpoint, ")", sep = ""),
-      raw = raw_content
+        ok = TRUE,
+        status = paste("OK (", endpoint, ")", sep = ""),
+        raw = raw_content
       ))
   }
 

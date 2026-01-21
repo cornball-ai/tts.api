@@ -29,11 +29,11 @@
       existing <- gpu.ctl::gpu_services()
       if (!.tts_gpu_service$name %in% existing$name) {
         gpu.ctl::gpu_register(
-        name = .tts_gpu_service$name,
-        port = .tts_gpu_service$port,
-        vram = .tts_gpu_service$vram,
-        container = .tts_gpu_service$container,
-        health_endpoint = .tts_gpu_service$health
+          name = .tts_gpu_service$name,
+          port = .tts_gpu_service$port,
+          vram = .tts_gpu_service$vram,
+          container = .tts_gpu_service$container,
+          health_endpoint = .tts_gpu_service$health
         )
       }
     }, error = function(e) {

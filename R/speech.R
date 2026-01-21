@@ -11,7 +11,7 @@
 #' @param file Character or NULL. Output file path. If NULL, returns raw bytes.
 #' @param backend Character. Backend to use: "chatterbox" for local server,
 #'   "openai" for OpenAI TTS API, "elevenlabs" for ElevenLabs API,
-#'   or "auto" to use configured API base.
+#'   "fal" for fal.ai TTS models, or "auto" to use configured API base.
 #' @param model Character or NULL. The model to use.
 #'   For OpenAI: "tts-1" or "tts-1-hd".
 #'   For ElevenLabs: "eleven_multilingual_v2" (default), "eleven_turbo_v2_5", etc.
@@ -49,7 +49,7 @@ speech <- function(
   input,
   voice,
   file = NULL,
-  backend = c("auto", "chatterbox", "openai", "elevenlabs"),
+  backend = c("auto", "chatterbox", "openai", "elevenlabs", "fal"),
   model = NULL,
   temperature = NULL,
   speed = NULL,
@@ -81,12 +81,22 @@ speech <- function(
   # Dispatch to ElevenLabs (different API structure)
   if (backend == "elevenlabs") {
     return(.tts_elevenlabs(
-      input = input,
-      voice_id = voice,
-      file = file,
-      model = model,
-      stability = stability,
-      similarity_boost = similarity_boost
+        input = input,
+        voice_id = voice,
+        file = file,
+        model = model,
+        stability = stability,
+        similarity_boost = similarity_boost
+      ))
+  }
+
+  # Dispatch to fal.ai
+  if (backend == "fal") {
+    return(.tts_fal(
+        input = input,
+        voice = voice,
+        file = file,
+        model = model
       ))
   }
 
@@ -240,8 +250,8 @@ speech <- function(
     text = input,
     model_id = model %||% "eleven_multilingual_v2",
     voice_settings = list(
-    stability = stability %||% 0.5,
-    similarity_boost = similarity_boost %||% 0.75
+      stability = stability %||% 0.5,
+      similarity_boost = similarity_boost %||% 0.75
     )
   )
 
@@ -270,6 +280,78 @@ speech <- function(
         err$detail$message %||% err$detail %||% rawToChar(response$content)
       }, error = function(e) rawToChar(response$content))
     stop("ElevenLabs API error (", response$status_code, "): ", err_msg, call. = FALSE)
+  }
+
+  audio_data <- response$content
+
+  if (is.null(file)) {
+    return(audio_data)
+  }
+
+  tryCatch({
+      writeBin(audio_data, file)
+    }, error = function(e) {
+      stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
+    })
+
+  invisible(file)
+}
+
+#' fal.ai TTS backend
+#' @keywords internal
+.tts_fal <- function(
+  input,
+  voice = NULL,
+  file = NULL,
+  model = NULL
+) {
+
+  if (!requireNamespace("fal.api", quietly = TRUE)) {
+    stop("fal.api package is required for fal backend.\n",
+      "Install with: remotes::install_github('cornball-ai/fal.api')",
+      call. = FALSE)
+  }
+
+  # Default to F5-TTS (good quality, supports voice cloning)
+  model <- model %||% "fal-ai/f5-tts"
+
+  # Build request - voice can be a reference audio URL or path
+  params <- list(gen_text = input)
+
+  # If voice looks like a file path, upload it
+  if (!is.null(voice)) {
+    if (file.exists(voice)) {
+      params$ref_audio_url <- fal.api::.fal_upload_file(voice)
+    } else if (grepl("^https?://", voice)) {
+      params$ref_audio_url <- voice
+    } else {
+      # Assume it's a voice name/ID for models that support named voices
+      params$voice <- voice
+    }
+  }
+
+  # Run TTS
+  result <- fal.api::fal_generate(
+    model = model,
+    gen_text = input,
+    ref_audio_url = params$ref_audio_url,
+    .timeout = getOption("tts.timeout", 120)
+  )
+
+  # Get audio URL from result
+  audio_url <- result$audio$url %||% result$audio_url %||% result$url
+
+  if (is.null(audio_url)) {
+    stop("fal.ai TTS did not return audio URL", call. = FALSE)
+  }
+
+  # Download audio
+  h <- curl::new_handle()
+  curl::handle_setopt(h, timeout = getOption("tts.timeout", 120))
+  response <- curl::curl_fetch_memory(audio_url, handle = h)
+
+  if (response$status_code >= 400) {
+    stop("Failed to download audio from fal.ai: HTTP ", response$status_code, call. = FALSE)
   }
 
   audio_data <- response$content
