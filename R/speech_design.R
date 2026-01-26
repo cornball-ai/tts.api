@@ -37,41 +37,40 @@
 #'   file = "playful.wav"
 #' )
 #' }
-speech_design <- function(
-  input,
-  voice_description,
-  file = NULL,
-  language = "English"
-) {
-  # Validate required parameters
-  if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
-    stop("'input' must be a non-empty character string", call. = FALSE)
-  }
-  if (!is.character(voice_description) || length(voice_description) != 1 ||
-    nchar(voice_description) == 0) {
-    stop("'voice_description' must be a non-empty character string", call. = FALSE)
-  }
+speech_design <- function (input, voice_description, file = NULL,
+                           language = "English")
+{
+    # Validate required parameters
+    if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
+        stop("'input' must be a non-empty character string", call. = FALSE)
+    }
+    if (!is.character(voice_description) || length(voice_description) != 1 ||
+        nchar(voice_description) == 0) {
+        stop("'voice_description' must be a non-empty character string", call. = FALSE)
+    }
 
-  # Build request body
-  body <- list(
-    input = input,
-    voice_description = voice_description,
-    language = language
-  )
+    # Build request body
+    body <- list(
+        input = input,
+        voice_description = voice_description,
+        language = language
+    )
 
-  # Make request
-  audio_data <- .tts_post_json("/v1/audio/speech/design", body, expect_binary = TRUE)
+    # Make request
+    audio_data <- .tts_post_json("/v1/audio/speech/design", body, expect_binary = TRUE)
 
-  # Return or write to file
-  if (is.null(file)) {
-    return(audio_data)
-  }
+    # Return or write to file
+    if (is.null(file)) {
+        return(audio_data)
+    }
 
-  tryCatch({
-      writeBin(audio_data, file)
-    }, error = function(e) {
-      stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
-    })
+    tryCatch({
+            writeBin(audio_data, file)
+        }, error = function (e)
+        {
+            stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
+        })
 
-  invisible(file)
+    invisible(file)
 }
+

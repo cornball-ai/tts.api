@@ -8,7 +8,7 @@ speech(
   input,
   voice,
   file = NULL,
-  backend = c("auto", "chatterbox", "openai", "elevenlabs", "fal"),
+  backend = c("auto", "native", "chatterbox", "openai", "elevenlabs", "fal"),
   model = NULL,
   temperature = NULL,
   speed = NULL,
@@ -18,22 +18,25 @@ speech(
   similarity_boost = NULL,
   seed = NULL,
   response_format = NULL,
-  instructions = NULL
+  instructions = NULL,
+  device = "cuda"
 )
 }
 \arguments{
 \item{input}{Character. The text to convert to speech.}
 
 \item{voice}{Character. The voice to use for synthesis.
+For native: path to voice reference audio file.
 For OpenAI: "alloy", "echo", "fable", "onyx", "nova", "shimmer".
 For ElevenLabs: voice ID (e.g., "XpDLYThV0yUAFjVTok7m").
-For Chatterbox: custom voice names uploaded via voice_upload().}
+For Chatterbox container: custom voice names uploaded via voice_upload().}
 
 \item{file}{Character or NULL. Output file path. If NULL, returns raw bytes.}
 
-\item{backend}{Character. Backend to use: "chatterbox" for local server,
-"openai" for OpenAI TTS API, "elevenlabs" for ElevenLabs API,
-"fal" for fal.ai TTS models, or "auto" to use configured API base.}
+\item{backend}{Character. Backend to use: "native" for R chatterbox package,
+"chatterbox" for local container, "openai" for OpenAI TTS API,
+"elevenlabs" for ElevenLabs API, "fal" for fal.ai TTS models,
+or "auto" to use native if available, else configured API base.}
 
 \item{model}{Character or NULL. The model to use.
 For OpenAI: "tts-1" or "tts-1-hd".
@@ -59,19 +62,26 @@ If NULL and file is provided, inferred from file extension.}
 
 \item{instructions}{Character or NULL. Instructions for how the voice should
 speak (OpenAI-specific, e.g., "Speak in a cheerful and positive tone.").}
+
+\item{device}{Character. Device for native backend: "cuda", "cpu", or "mps".
+Default "cuda".}
 }
 \value{
 If \code{file} is provided, invisibly returns the file path.
-  If \code{file} is NULL, returns raw audio bytes.
+  If \code{file} is NULL, returns raw audio bytes (or list for native backend).
 }
 \description{
-Generate audio from text using various TTS backends: local Chatterbox server,
-OpenAI TTS API, or ElevenLabs API.
+Generate audio from text using various TTS backends: native R chatterbox,
+local Chatterbox container, OpenAI TTS API, or ElevenLabs API.
 }
 \examples{
 \dontrun{
-# Using local Chatterbox server
-set_tts_base("http://localhost:4123")
+# Using native R chatterbox package (no container needed)
+speech("Hello, world!", voice = "path/to/reference.wav",
+       file = "hello.wav", backend = "native")
+
+# Using local Chatterbox container
+set_tts_base("http://localhost:7812")
 speech("Hello, world!", voice = "FatherChristmas", file = "hello.wav")
 
 # Using OpenAI TTS

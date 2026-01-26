@@ -34,85 +34,84 @@
 #'   file = "output.wav"
 #' )
 #' }
-voice_upload <- function(
-  voice_file,
-  voice_name,
-  language = NULL
-) {
-  # Validate parameters
-  if (!is.character(voice_file) || length(voice_file) != 1) {
-    stop("'voice_file' must be a character string", call. = FALSE)
-  }
-  if (!file.exists(voice_file)) {
-    stop("Voice file not found: ", voice_file, call. = FALSE)
-  }
-  if (!is.character(voice_name) || length(voice_name) != 1 || nchar(voice_name) == 0) {
-    stop("'voice_name' must be a non-empty character string", call. = FALSE)
-  }
-
-  # Build URL
-  base <- .tts_get_api_base()
-  url <- paste0(base, "/voices")
-
-  # Create form data
-  h <- curl::new_handle()
-  timeout <- getOption("tts.timeout", 30)
-  curl::handle_setopt(h, timeout = timeout)
-
-  # Add authorization header if needed
-  api_key <- .tts_get_api_key()
-  if (!is.null(api_key) && nchar(api_key) > 0) {
-    curl::handle_setheaders(h, "Authorization" = paste("Bearer", api_key))
-  }
-
-  # Build multipart form
-  form_data <- list(
-    voice_file = curl::form_file(voice_file),
-    voice_name = voice_name
-  )
-
-  if (!is.null(language)) {
-    form_data$language <- language
-  }
-
-  curl::handle_setform(h, .list = form_data)
-
-  # Make request
-  response <- tryCatch(
-    curl::curl_fetch_memory(url, handle = h),
-    error = function(e) {
-      stop("Connection failed: ", e$message, call. = FALSE)
+voice_upload <- function (voice_file, voice_name, language = NULL)
+{
+    # Validate parameters
+    if (!is.character(voice_file) || length(voice_file) != 1) {
+        stop("'voice_file' must be a character string", call. = FALSE)
     }
-  )
+    if (!file.exists(voice_file)) {
+        stop("Voice file not found: ", voice_file, call. = FALSE)
+    }
+    if (!is.character(voice_name) || length(voice_name) != 1 || nchar(voice_name) == 0) {
+        stop("'voice_name' must be a non-empty character string", call. = FALSE)
+    }
 
-  # Check HTTP status
-  status <- response$status_code
-  if (status >= 400) {
-    err_msg <- tryCatch({
-        err <- jsonlite::fromJSON(rawToChar(response$content))
-        if (!is.null(err$error$message)) {
-          err$error$message
-        } else if (!is.null(err$error)) {
-          as.character(err$error)
-        } else if (!is.null(err$detail)) {
-          as.character(err$detail)
-        } else {
-          rawToChar(response$content)
+    # Build URL
+    base <- .tts_get_api_base()
+    url <- paste0(base, "/voices")
+
+    # Create form data
+    h <- curl::new_handle()
+    timeout <- getOption("tts.timeout", 30)
+    curl::handle_setopt(h, timeout = timeout)
+
+    # Add authorization header if needed
+    api_key <- .tts_get_api_key()
+    if (!is.null(api_key) && nchar(api_key) > 0) {
+        curl::handle_setheaders(h, "Authorization" = paste("Bearer", api_key))
+    }
+
+    # Build multipart form
+    form_data <- list(
+        voice_file = curl::form_file(voice_file),
+        voice_name = voice_name
+    )
+
+    if (!is.null(language)) {
+        form_data$language <- language
+    }
+
+    curl::handle_setform(h, .list = form_data)
+
+    # Make request
+    response <- tryCatch(
+        curl::curl_fetch_memory(url, handle = h),
+        error = function (e)
+        {
+            stop("Connection failed: ", e$message, call. = FALSE)
         }
-      }, error = function(e) {
-        rawToChar(response$content)
-      })
-    stop("API error (", status, "): ", err_msg, call. = FALSE)
-  }
+    )
 
-  # Parse response
-  result <- tryCatch(
-    jsonlite::fromJSON(rawToChar(response$content)),
-    error = function(e) rawToChar(response$content)
-  )
+    # Check HTTP status
+    status <- response$status_code
+    if (status >= 400) {
+        err_msg <- tryCatch({
+                err <- jsonlite::fromJSON(rawToChar(response$content))
+                if (!is.null(err$error$message)) {
+                    err$error$message
+                } else if (!is.null(err$error)) {
+                    as.character(err$error)
+                } else if (!is.null(err$detail)) {
+                    as.character(err$detail)
+                } else {
+                    rawToChar(response$content)
+                }
+            }, error = function (e)
+            {
+                rawToChar(response$content)
+            })
+        stop("API error (", status, "): ", err_msg, call. = FALSE)
+    }
 
-  message("Voice '", voice_name, "' uploaded successfully")
-  invisible(result)
+    # Parse response
+    result <- tryCatch(
+        jsonlite::fromJSON(rawToChar(response$content)),
+        error = function (e) rawToChar(response$content)
+    )
+
+    message("Voice '", voice_name, "' uploaded successfully")
+    invisible(result)
 }
 
 #' Upload Voice to Chatterbox
@@ -138,40 +137,40 @@ voice_upload <- function(
 #'   }
 #' }
 chatterbox_voice_upload <- function(
-  voice_file,
-  voice_name,
-  port = NULL,
-  timeout = 30
+    voice_file,
+    voice_name,
+    port = NULL,
+    timeout = 30
 ) {
-  # Validate parameters
-  if (!is.character(voice_file) || length(voice_file) != 1) {
-    return(FALSE)
-  }
-  if (!file.exists(voice_file)) {
-    return(FALSE)
-  }
-  if (!is.character(voice_name) || length(voice_name) != 1 || nchar(voice_name) == 0) {
-    return(FALSE)
-  }
+    # Validate parameters
+    if (!is.character(voice_file) || length(voice_file) != 1) {
+        return(FALSE)
+    }
+    if (!file.exists(voice_file)) {
+        return(FALSE)
+    }
+    if (!is.character(voice_name) || length(voice_name) != 1 || nchar(voice_name) == 0) {
+        return(FALSE)
+    }
 
-  # Get port
-  if (is.null(port)) {
-    port <- Sys.getenv("CHATTERBOX_PORT", "4123")
-  }
+    # Get port
+    if (is.null(port)) {
+        port <- Sys.getenv("CHATTERBOX_PORT", "4123")
+    }
 
-  url <- paste0("http://localhost:", port, "/voices")
+    url <- paste0("http://localhost:", port, "/voices")
 
-  tryCatch({
-      h <- curl::new_handle()
-      curl::handle_setopt(h, timeout = timeout)
-      curl::handle_setform(h,
-        voice_name = voice_name,
-        voice_file = curl::form_file(voice_file)
-      )
+    tryCatch({
+            h <- curl::new_handle()
+            curl::handle_setopt(h, timeout = timeout)
+            curl::handle_setform(h,
+                voice_name = voice_name,
+                voice_file = curl::form_file(voice_file)
+            )
 
-      res <- curl::curl_fetch_memory(url, handle = h)
-      res$status_code %in% c(200, 201)
+            res <- curl::curl_fetch_memory(url, handle = h)
+            res$status_code %in% c(200, 201)
 
-    }, error = function(e) FALSE)
+        }, error = function(e) FALSE)
 }
 

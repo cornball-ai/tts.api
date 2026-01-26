@@ -2,6 +2,7 @@
 
 export(chatterbox_available)
 export(chatterbox_voice_upload)
+export(clear_native_chatterbox_cache)
 export(elevenlabs_voice_delete)
 export(elevenlabs_voice_upload)
 export(elevenlabs_voices)

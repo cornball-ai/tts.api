@@ -13,3 +13,4 @@ expect_error(speech("hello", voice = 123), pattern = "non-empty character")
 
 # backend must be valid
 expect_error(speech("hello", voice = "nova", backend = "invalid"), pattern = "arg")
+

@@ -10,20 +10,22 @@
 #' \dontrun{
 #' set_tts_key(Sys.getenv("OPENAI_API_KEY"))
 #' }
-set_tts_key <- function(key) {
-  if (!is.character(key) || length(key) != 1) {
-    stop("'key' must be a character string", call. = FALSE)
-  }
-  old <- getOption("tts.api_key")
-  options(tts.api_key = key)
-  invisible(old)
+set_tts_key <- function (key)
+{
+    if (!is.character(key) || length(key) != 1) {
+        stop("'key' must be a character string", call. = FALSE)
+    }
+    old <- getOption("tts.api_key")
+    options(tts.api_key = key)
+    invisible(old)
 }
 
 #' Get the TTS API Key
 #'
 #' @return Character string with the API key, or NULL if not set.
 #' @keywords internal
-.tts_get_api_key <- function() {
-  getOption("tts.api_key")
+.tts_get_api_key <- function ()
+{
+    getOption("tts.api_key")
 }
 
