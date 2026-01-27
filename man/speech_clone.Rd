@@ -8,6 +8,7 @@ speech_clone(
   input,
   voice_file,
   file = NULL,
+  backend = c("auto", "chatterbox", "qwen3"),
   ref_text = NULL,
   x_vector_only = FALSE,
   language = NULL,
@@ -24,6 +25,9 @@ speech_clone(
 \item{voice_file}{Character. Path to the voice sample file (mp3, wav, etc.).}
 
 \item{file}{Character or NULL. Output file path. If NULL, returns raw bytes.}
+
+\item{backend}{Character. Backend to use: "auto" to detect qwen3 vs chatterbox,
+"qwen3" for Qwen3-TTS, or "chatterbox" for Chatterbox.}
 
 \item{ref_text}{Character or NULL. Transcript of the reference audio. Required
 by qwen3-tts for high-quality cloning (ICL mode). If NULL and backend requires
@@ -54,14 +58,15 @@ Uploads a voice sample and generates speech in that voice using the
 }
 \examples{
 \dontrun{
-set_tts_base("http://localhost:4123")
+set_tts_base("http://localhost:7812")
 
 # Clone voice with transcript (high quality, qwen3-tts)
 speech_clone(
   input = "Hello with my custom voice!",
   voice_file = "my_voice.wav",
   ref_text = "This is what I said in the recording.",
-  file = "output.wav"
+  file = "output.wav",
+  backend = "qwen3"
 )
 
 # Clone voice without transcript (faster, lower quality)
@@ -77,7 +82,8 @@ speech_clone(
   input = "Hello with my custom voice!",
   voice_file = "my_voice.mp3",
   file = "output.wav",
-  exaggeration = 0.8
+  exaggeration = 0.8,
+  backend = "chatterbox"
 )
 }
 }

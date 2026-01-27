@@ -28,6 +28,38 @@ chatterbox_available <- function (port = NULL, timeout = 2)
         }, error = function (e) FALSE)
 }
 
+#' Check if Qwen3-TTS Service is Available
+#'
+#' Quick check if Qwen3-TTS API is reachable. Distinguishes from Chatterbox
+#' by checking for the qwen3-specific /v1/audio/speech/design endpoint.
+#'
+#' @param port Port to check (default from QWEN3_TTS_PORT env var or 7812)
+#' @param timeout Timeout in seconds (default 2)
+#' @return TRUE if Qwen3-TTS is available, FALSE otherwise
+#' @export
+#' @examples
+#' \dontrun{
+#'   if (qwen3_available()) {
+#'     speech("Hello", voice = "Vivian", backend = "qwen3")
+#'   }
+#' }
+qwen3_available <- function (port = NULL, timeout = 2)
+{
+    if (is.null(port)) {
+        port <- Sys.getenv("QWEN3_TTS_PORT", "7812")
+    }
+    # Check for qwen3-specific endpoint (Chatterbox doesn't have /v1/audio/speech/design)
+    url <- paste0("http://localhost:", port, "/v1/audio/speech/design")
+
+    tryCatch({
+            h <- curl::new_handle()
+            curl::handle_setopt(h, timeout = timeout, customrequest = "OPTIONS")
+            res <- curl::curl_fetch_memory(url, handle = h)
+            # 200 or 405 (Method Not Allowed) means endpoint exists
+            res$status_code < 500
+        }, error = function (e) FALSE)
+}
+
 #' Check TTS API Health
 #'
 #' Checks whether the TTS backend is reachable by trying common health endpoints.

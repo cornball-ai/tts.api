@@ -26,6 +26,12 @@ tts_providers <- list(
         env_var = NULL,
         base_url = "http://localhost:4123"
     ),
+    "Qwen3-TTS (Local)" = list(
+        voices = c("Vivian", "Serena", "Uncle_Fu", "Dylan", "Eric",
+                   "Ryan", "Aiden", "Ono_Anna", "Sohee"),
+        env_var = NULL,
+        base_url = "http://localhost:7812"
+    ),
     "ElevenLabs" = list(
         voices = NULL, # Fetched dynamically from API
         env_var = "ELEVENLABS_API_KEY",

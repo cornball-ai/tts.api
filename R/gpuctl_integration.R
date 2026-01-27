@@ -3,13 +3,22 @@
 # Optionally acquires GPU resources before API calls when gpu.ctl is available.
 # Enable with: options(tts.gpuctl = TRUE)
 
-# Service configuration for Chatterbox TTS
-.tts_gpu_service <- list(
-    name = "chatterbox",
-    port = 7812,
-    vram = 6,
-    container = "chatterbox",
-    health = "/health"
+# Service registry for TTS backends
+.tts_gpu_services <- list(
+    chatterbox = list(
+        name = "chatterbox",
+        port = 7812,
+        vram = 6,
+        container = "chatterbox",
+        health = "/health"
+    ),
+    qwen3 = list(
+        name = "qwen3-tts",
+        port = 7812,
+        vram = 8,
+        container = "qwen3-tts-api",
+        health = "/health"
+    )
 )
 
 #' Check if gpu.ctl integration is enabled
@@ -21,21 +30,28 @@
 }
 
 #' Register tts.api service with gpu.ctl
+#' @param backend Character. Backend name ("chatterbox" or "qwen3")
 #' @noRd
-.gpuctl_register_service <- function ()
+.gpuctl_register_service <- function (backend = "chatterbox")
 {
     if (!.gpuctl_enabled()) return(invisible(FALSE))
+
+    service <- .tts_gpu_services[[backend]]
+    if (is.null(service)) {
+        warning("Unknown backend for gpu.ctl: ", backend, call. = FALSE)
+        return(invisible(FALSE))
+    }
 
     tryCatch({
             # Only register if not already registered
             existing <- gpu.ctl::gpu_services()
-            if (!.tts_gpu_service$name %in% existing$name) {
+            if (!service$name %in% existing$name) {
                 gpu.ctl::gpu_register(
-                    name = .tts_gpu_service$name,
-                    port = .tts_gpu_service$port,
-                    vram = .tts_gpu_service$vram,
-                    container = .tts_gpu_service$container,
-                    health_endpoint = .tts_gpu_service$health
+                    name = service$name,
+                    port = service$port,
+                    vram = service$vram,
+                    container = service$container,
+                    health_endpoint = service$health
                 )
             }
         }, error = function (e)
@@ -45,18 +61,25 @@
     invisible(TRUE)
 }
 
-#' Acquire GPU for chatterbox if gpu.ctl is enabled
+#' Acquire GPU for TTS backend if gpu.ctl is enabled
 #'
+#' @param backend Character. Backend name ("chatterbox" or "qwen3")
 #' @return Invisible TRUE if acquired, FALSE if not using gpu.ctl
 #' @noRd
-.gpuctl_acquire <- function ()
+.gpuctl_acquire <- function (backend = "chatterbox")
 {
     if (!.gpuctl_enabled()) return(invisible(FALSE))
 
-    .gpuctl_register_service()
+    service <- .tts_gpu_services[[backend]]
+    if (is.null(service)) {
+        warning("Unknown backend for gpu.ctl: ", backend, call. = FALSE)
+        return(invisible(FALSE))
+    }
+
+    .gpuctl_register_service(backend)
 
     tryCatch({
-            gpu.ctl::gpu_acquire(.tts_gpu_service$name)
+            gpu.ctl::gpu_acquire(service$name)
             invisible(TRUE)
         }, error = function (e)
         {

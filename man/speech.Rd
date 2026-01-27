@@ -8,7 +8,7 @@ speech(
   input,
   voice,
   file = NULL,
-  backend = c("auto", "native", "chatterbox", "openai", "elevenlabs", "fal"),
+  backend = c("auto", "native", "chatterbox", "qwen3", "openai", "elevenlabs", "fal"),
   model = NULL,
   temperature = NULL,
   speed = NULL,
@@ -34,9 +34,10 @@ For Chatterbox container: custom voice names uploaded via voice_upload().}
 \item{file}{Character or NULL. Output file path. If NULL, returns raw bytes.}
 
 \item{backend}{Character. Backend to use: "native" for R chatterbox package,
-"chatterbox" for local container, "openai" for OpenAI TTS API,
-"elevenlabs" for ElevenLabs API, "fal" for fal.ai TTS models,
-or "auto" to use native if available, else configured API base.}
+"chatterbox" for local Chatterbox container, "qwen3" for Qwen3-TTS container,
+"openai" for OpenAI TTS API, "elevenlabs" for ElevenLabs API,
+"fal" for fal.ai TTS models, or "auto" to use native if available, else
+configured API base.}
 
 \item{model}{Character or NULL. The model to use.
 For OpenAI: "tts-1" or "tts-1-hd".

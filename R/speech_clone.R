@@ -6,6 +6,8 @@
 #' @param input Character. The text to convert to speech.
 #' @param voice_file Character. Path to the voice sample file (mp3, wav, etc.).
 #' @param file Character or NULL. Output file path. If NULL, returns raw bytes.
+#' @param backend Character. Backend to use: "auto" to detect qwen3 vs chatterbox,
+#'   "qwen3" for Qwen3-TTS, or "chatterbox" for Chatterbox.
 #' @param ref_text Character or NULL. Transcript of the reference audio. Required
 #'   by qwen3-tts for high-quality cloning (ICL mode). If NULL and backend requires
 #'   it, use \code{x_vector_only = TRUE} for faster but lower-quality cloning.
@@ -24,14 +26,15 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' set_tts_base("http://localhost:4123")
+#' set_tts_base("http://localhost:7812")
 #'
 #' # Clone voice with transcript (high quality, qwen3-tts)
 #' speech_clone(
 #'   input = "Hello with my custom voice!",
 #'   voice_file = "my_voice.wav",
 #'   ref_text = "This is what I said in the recording.",
-#'   file = "output.wav"
+#'   file = "output.wav",
+#'   backend = "qwen3"
 #' )
 #'
 #' # Clone voice without transcript (faster, lower quality)
@@ -47,14 +50,27 @@
 #'   input = "Hello with my custom voice!",
 #'   voice_file = "my_voice.mp3",
 #'   file = "output.wav",
-#'   exaggeration = 0.8
+#'   exaggeration = 0.8,
+#'   backend = "chatterbox"
 #' )
 #' }
-speech_clone <- function (input, voice_file, file = NULL, ref_text = NULL,
-                          x_vector_only = FALSE, language = NULL,
-                          exaggeration = NULL, temperature = NULL,
-                          cfg_weight = NULL, speed = NULL, seed = NULL)
+speech_clone <- function (input, voice_file, file = NULL,
+                          backend = c("auto", "chatterbox", "qwen3"),
+                          ref_text = NULL, x_vector_only = FALSE,
+                          language = NULL, exaggeration = NULL,
+                          temperature = NULL, cfg_weight = NULL,
+                          speed = NULL, seed = NULL)
 {
+    backend <- match.arg(backend)
+
+    # Auto-detect backend: qwen3 has /v1/audio/speech/design endpoint
+    if (backend == "auto") {
+        backend <- if (qwen3_available()) "qwen3" else "chatterbox"
+    }
+
+    # Acquire GPU for container backend
+    .gpuctl_acquire(backend)
+
     # Validate required parameters
     if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
         stop("'input' must be a non-empty character string", call. = FALSE)

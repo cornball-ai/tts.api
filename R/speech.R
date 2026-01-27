@@ -11,9 +11,10 @@
 #'   For Chatterbox container: custom voice names uploaded via voice_upload().
 #' @param file Character or NULL. Output file path. If NULL, returns raw bytes.
 #' @param backend Character. Backend to use: "native" for R chatterbox package,
-#'   "chatterbox" for local container, "openai" for OpenAI TTS API,
-#'   "elevenlabs" for ElevenLabs API, "fal" for fal.ai TTS models,
-#'   or "auto" to use native if available, else configured API base.
+#'   "chatterbox" for local Chatterbox container, "qwen3" for Qwen3-TTS container,
+#'   "openai" for OpenAI TTS API, "elevenlabs" for ElevenLabs API,
+#'   "fal" for fal.ai TTS models, or "auto" to use native if available, else
+#'   configured API base.
 #' @param model Character or NULL. The model to use.
 #'   For OpenAI: "tts-1" or "tts-1-hd".
 #'   For ElevenLabs: "eleven_multilingual_v2" (default), "eleven_turbo_v2_5", etc.
@@ -54,7 +55,7 @@
 #'        file = "hello.mp3", backend = "elevenlabs")
 #' }
 speech <- function (input, voice, file = NULL,
-                    backend = c("auto", "native", "chatterbox", "openai", "elevenlabs", "fal"),
+                    backend = c("auto", "native", "chatterbox", "qwen3", "openai", "elevenlabs", "fal"),
                     model = NULL, temperature = NULL, speed = NULL,
                     exaggeration = NULL, cfg_weight = NULL, stability = NULL,
                     similarity_boost = NULL, seed = NULL,
@@ -94,7 +95,10 @@ speech <- function (input, voice, file = NULL,
 
     # Acquire GPU for local container backends
     if (backend == "chatterbox") {
-        .gpuctl_acquire()
+        .gpuctl_acquire("chatterbox")
+    }
+    if (backend == "qwen3") {
+        .gpuctl_acquire("qwen3")
     }
 
     # Validate required parameters

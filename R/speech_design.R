@@ -40,6 +40,9 @@
 speech_design <- function (input, voice_description, file = NULL,
                            language = "English")
 {
+    # Acquire GPU for qwen3 (this function is qwen3-only)
+    .gpuctl_acquire("qwen3")
+
     # Validate required parameters
     if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
         stop("'input' must be a non-empty character string", call. = FALSE)
