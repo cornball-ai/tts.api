@@ -63,6 +63,14 @@ speech <- function (input, voice, file = NULL,
                     device = "cuda") {
     backend <- match.arg(backend)
 
+    # Validate required parameters early (before backend dispatch)
+    if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
+        stop("'input' must be a non-empty character string", call. = FALSE)
+    }
+    if (!is.character(voice) || length(voice) != 1 || nchar(voice) == 0) {
+        stop("'voice' must be a non-empty character string", call. = FALSE)
+    }
+
     # Auto mode: prefer native if available, else use API
     if (backend == "auto") {
         if (.has_chatterbox()) {
@@ -98,14 +106,6 @@ speech <- function (input, voice, file = NULL,
     }
     if (backend == "qwen3") {
         .gpuctl_acquire("qwen3")
-    }
-
-    # Validate required parameters
-    if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
-        stop("'input' must be a non-empty character string", call. = FALSE)
-    }
-    if (!is.character(voice) || length(voice) != 1 || nchar(voice) == 0) {
-        stop("'voice' must be a non-empty character string", call. = FALSE)
     }
 
     # Dispatch to ElevenLabs (different API structure)
