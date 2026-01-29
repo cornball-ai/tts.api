@@ -16,6 +16,7 @@ Imports:
     curl,
     jsonlite
 Suggests:
+    chatterbox,
     fal.api,
     gpu.ctl,
     processx,
