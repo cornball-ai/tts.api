@@ -9,12 +9,11 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' set_tts_base("http://localhost:4123")
+#' set_tts_base("http://localhost:7810")
 #' v <- voices()
 #' print(v)
 #' }
-voices <- function ()
-{
+voices <- function () {
     # Try standard OpenAI-compatible endpoint first
     result <- tryCatch(
         .tts_get("/v1/audio/voices"),

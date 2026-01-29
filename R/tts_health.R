@@ -3,7 +3,7 @@
 #' Quick check if the local Chatterbox TTS API is reachable.
 #' Returns TRUE/FALSE without throwing errors.
 #'
-#' @param port Port to check (default from CHATTERBOX_PORT env var or 4123)
+#' @param port Port to check (default from CHATTERBOX_PORT env var or 7810)
 #' @param timeout Timeout in seconds (default 2)
 #' @return TRUE if service is available, FALSE otherwise
 #' @export
@@ -13,10 +13,9 @@
 #'     speech("Hello", voice = "default", backend = "chatterbox")
 #'   }
 #' }
-chatterbox_available <- function (port = NULL, timeout = 2)
-{
+chatterbox_available <- function (port = NULL, timeout = 2) {
     if (is.null(port)) {
-        port <- Sys.getenv("CHATTERBOX_PORT", "4123")
+        port <- Sys.getenv("CHATTERBOX_PORT", "7810")
     }
     url <- paste0("http://localhost:", port, "/health")
 
@@ -33,7 +32,7 @@ chatterbox_available <- function (port = NULL, timeout = 2)
 #' Quick check if Qwen3-TTS API is reachable. Distinguishes from Chatterbox
 #' by checking for the qwen3-specific /v1/audio/speech/design endpoint.
 #'
-#' @param port Port to check (default from QWEN3_TTS_PORT env var or 7812)
+#' @param port Port to check (default from QWEN3_TTS_PORT env var or 7811)
 #' @param timeout Timeout in seconds (default 2)
 #' @return TRUE if Qwen3-TTS is available, FALSE otherwise
 #' @export
@@ -43,10 +42,10 @@ chatterbox_available <- function (port = NULL, timeout = 2)
 #'     speech("Hello", voice = "Vivian", backend = "qwen3")
 #'   }
 #' }
-qwen3_available <- function (port = NULL, timeout = 2)
+qwen3_available <- function(port = NULL, timeout = 2)
 {
     if (is.null(port)) {
-        port <- Sys.getenv("QWEN3_TTS_PORT", "7812")
+        port <- Sys.getenv("QWEN3_TTS_PORT", "7811")
     }
     # Check for qwen3-specific endpoint (Chatterbox doesn't have /v1/audio/speech/design)
     url <- paste0("http://localhost:", port, "/v1/audio/speech/design")
@@ -57,7 +56,7 @@ qwen3_available <- function (port = NULL, timeout = 2)
             res <- curl::curl_fetch_memory(url, handle = h)
             # 200 or 405 (Method Not Allowed) means endpoint exists
             res$status_code < 500
-        }, error = function (e) FALSE)
+        }, error = function(e) FALSE)
 }
 
 #' Check TTS API Health

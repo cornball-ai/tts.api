@@ -24,13 +24,13 @@ tts_providers <- list(
     "Chatterbox (Local)" = list(
         voices = NULL, # Fetched dynamically from container
         env_var = NULL,
-        base_url = "http://localhost:4123"
+        base_url = "http://localhost:7810"
     ),
     "Qwen3-TTS (Local)" = list(
         voices = c("Vivian", "Serena", "Uncle_Fu", "Dylan", "Eric",
-                   "Ryan", "Aiden", "Ono_Anna", "Sohee"),
+            "Ryan", "Aiden", "Ono_Anna", "Sohee"),
         env_var = NULL,
-        base_url = "http://localhost:7812"
+        base_url = "http://localhost:7811"
     ),
     "ElevenLabs" = list(
         voices = NULL, # Fetched dynamically from API
@@ -56,8 +56,7 @@ tts_providers <- list(
 #' tts_voices("OpenAI")
 #' tts_voices("Chatterbox (Local)")
 #' }
-tts_voices <- function (provider, base_url = NULL, timeout = 2)
-{
+tts_voices <- function (provider, base_url = NULL, timeout = 2) {
     # Get provider config
     config <- tts_providers[[provider]]
 
@@ -85,7 +84,7 @@ tts_voices <- function (provider, base_url = NULL, timeout = 2)
     if (is.null(base_url)) {
         # Check for environment variable overrides
         if (provider == "Chatterbox (Local)") {
-            port <- Sys.getenv("CHATTERBOX_PORT", "4123")
+            port <- Sys.getenv("CHATTERBOX_PORT", "7810")
             base_url <- paste0("http://localhost:", port)
         } else {
             if (!is.null(config$base_url)) {

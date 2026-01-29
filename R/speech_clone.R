@@ -26,7 +26,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' set_tts_base("http://localhost:7812")
+#' set_tts_base("http://localhost:7811")
 #'
 #' # Clone voice with transcript (high quality, qwen3-tts)
 #' speech_clone(
@@ -58,9 +58,8 @@ speech_clone <- function (input, voice_file, file = NULL,
                           backend = c("auto", "chatterbox", "qwen3"),
                           ref_text = NULL, x_vector_only = FALSE,
                           language = NULL, exaggeration = NULL,
-                          temperature = NULL, cfg_weight = NULL,
-                          speed = NULL, seed = NULL)
-{
+                          temperature = NULL, cfg_weight = NULL, speed = NULL,
+                          seed = NULL) {
     backend <- match.arg(backend)
 
     # Auto-detect backend: qwen3 has /v1/audio/speech/design endpoint
@@ -120,8 +119,7 @@ speech_clone <- function (input, voice_file, file = NULL,
     # Make request
     response <- tryCatch(
         curl::curl_fetch_memory(url, handle = h),
-        error = function (e)
-        {
+        error = function (e) {
             stop("Connection failed: ", e$message, call. = FALSE)
         }
     )
@@ -140,8 +138,7 @@ speech_clone <- function (input, voice_file, file = NULL,
                 } else {
                     rawToChar(response$content)
                 }
-            }, error = function (e)
-            {
+            }, error = function (e) {
                 rawToChar(response$content)
             })
         stop("API error (", status, "): ", err_msg, call. = FALSE)
@@ -157,8 +154,7 @@ speech_clone <- function (input, voice_file, file = NULL,
     # Write to file
     tryCatch({
             writeBin(audio_data, file)
-        }, error = function (e)
-        {
+        }, error = function (e) {
             stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
         })
 

@@ -7,14 +7,14 @@
 .tts_gpu_services <- list(
     chatterbox = list(
         name = "chatterbox",
-        port = 7812,
+        port = 7810,
         vram = 6,
         container = "chatterbox",
         health = "/health"
     ),
     qwen3 = list(
         name = "qwen3-tts",
-        port = 7812,
+        port = 7811,
         vram = 8,
         container = "qwen3-tts-api",
         health = "/health"
@@ -23,8 +23,7 @@
 
 #' Check if gpu.ctl integration is enabled
 #' @noRd
-.gpuctl_enabled <- function ()
-{
+.gpuctl_enabled <- function () {
     isTRUE(getOption("tts.gpuctl", FALSE)) &&
     requireNamespace("gpu.ctl", quietly = TRUE)
 }
@@ -32,8 +31,7 @@
 #' Register tts.api service with gpu.ctl
 #' @param backend Character. Backend name ("chatterbox" or "qwen3")
 #' @noRd
-.gpuctl_register_service <- function (backend = "chatterbox")
-{
+.gpuctl_register_service <- function (backend = "chatterbox") {
     if (!.gpuctl_enabled()) return(invisible(FALSE))
 
     service <- .tts_gpu_services[[backend]]
@@ -54,8 +52,7 @@
                     health_endpoint = service$health
                 )
             }
-        }, error = function (e)
-        {
+        }, error = function (e) {
             # Silently ignore registration errors
         })
     invisible(TRUE)
@@ -66,8 +63,7 @@
 #' @param backend Character. Backend name ("chatterbox" or "qwen3")
 #' @return Invisible TRUE if acquired, FALSE if not using gpu.ctl
 #' @noRd
-.gpuctl_acquire <- function (backend = "chatterbox")
-{
+.gpuctl_acquire <- function (backend = "chatterbox") {
     if (!.gpuctl_enabled()) return(invisible(FALSE))
 
     service <- .tts_gpu_services[[backend]]
@@ -81,8 +77,7 @@
     tryCatch({
             gpu.ctl::gpu_acquire(service$name)
             invisible(TRUE)
-        }, error = function (e)
-        {
+        }, error = function (e) {
             warning("gpu.ctl: ", e$message, call. = FALSE)
             invisible(FALSE)
         })

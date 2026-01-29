@@ -9,8 +9,7 @@
 #' @return Response content (raw bytes if binary, parsed JSON otherwise).
 #' @keywords internal
 .tts_request <- function (endpoint, method = "GET", body = NULL,
-                          expect_binary = FALSE)
-{
+                          expect_binary = FALSE) {
     base <- .tts_get_api_base()
     url <- paste0(base, endpoint)
 
@@ -35,8 +34,7 @@
     # Make request
     response <- tryCatch(
         curl::curl_fetch_memory(url, handle = h),
-        error = function (e)
-        {
+        error = function (e) {
             stop("Connection failed: ", e$message, call. = FALSE)
         }
     )
@@ -56,8 +54,7 @@
                 } else {
                     rawToChar(response$content)
                 }
-            }, error = function (e)
-            {
+            }, error = function (e) {
                 rawToChar(response$content)
             })
         stop("API error (", status, "): ", err_msg, call. = FALSE)

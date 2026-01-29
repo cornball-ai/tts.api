@@ -12,7 +12,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' set_tts_base("http://localhost:4123")
+#' set_tts_base("http://localhost:7810")
 #'
 #' # Upload a voice
 #' voice_upload(
@@ -34,8 +34,7 @@
 #'   file = "output.wav"
 #' )
 #' }
-voice_upload <- function (voice_file, voice_name, language = NULL)
-{
+voice_upload <- function (voice_file, voice_name, language = NULL) {
     # Validate parameters
     if (!is.character(voice_file) || length(voice_file) != 1) {
         stop("'voice_file' must be a character string", call. = FALSE)
@@ -77,8 +76,7 @@ voice_upload <- function (voice_file, voice_name, language = NULL)
     # Make request
     response <- tryCatch(
         curl::curl_fetch_memory(url, handle = h),
-        error = function (e)
-        {
+        error = function (e) {
             stop("Connection failed: ", e$message, call. = FALSE)
         }
     )
@@ -97,8 +95,7 @@ voice_upload <- function (voice_file, voice_name, language = NULL)
                 } else {
                     rawToChar(response$content)
                 }
-            }, error = function (e)
-            {
+            }, error = function (e) {
                 rawToChar(response$content)
             })
         stop("API error (", status, "): ", err_msg, call. = FALSE)
@@ -121,7 +118,7 @@ voice_upload <- function (voice_file, voice_name, language = NULL)
 #'
 #' @param voice_file Character. Path to the voice sample file (mp3, wav).
 #' @param voice_name Character. Name to save the voice as.
-#' @param port Port for Chatterbox API (default from CHATTERBOX_PORT env var or 4123)
+#' @param port Port for Chatterbox API (default from CHATTERBOX_PORT env var or 7810)
 #' @param timeout Timeout in seconds (default 30)
 #'
 #' @return TRUE if upload succeeded, FALSE otherwise. Does not throw errors.
@@ -155,7 +152,7 @@ chatterbox_voice_upload <- function(
 
     # Get port
     if (is.null(port)) {
-        port <- Sys.getenv("CHATTERBOX_PORT", "4123")
+        port <- Sys.getenv("CHATTERBOX_PORT", "7810")
     }
 
     url <- paste0("http://localhost:", port, "/voices")

@@ -44,7 +44,7 @@
 #'        file = "hello.wav", backend = "native")
 #'
 #' # Using local Chatterbox container
-#' set_tts_base("http://localhost:7812")
+#' set_tts_base("http://localhost:7810")
 #' speech("Hello, world!", voice = "FatherChristmas", file = "hello.wav")
 #'
 #' # Using OpenAI TTS
@@ -60,8 +60,7 @@ speech <- function (input, voice, file = NULL,
                     exaggeration = NULL, cfg_weight = NULL, stability = NULL,
                     similarity_boost = NULL, seed = NULL,
                     response_format = NULL, instructions = NULL,
-                    device = "cuda")
-{
+                    device = "cuda") {
     backend <- match.arg(backend)
 
     # Auto mode: prefer native if available, else use API
@@ -83,14 +82,14 @@ speech <- function (input, voice, file = NULL,
     # Dispatch to native chatterbox package
     if (backend == "native") {
         return(.via_chatterbox(
-            input = input,
-            voice = voice,
-            file = file,
-            exaggeration = exaggeration,
-            cfg_weight = cfg_weight,
-            temperature = temperature,
-            device = device
-        ))
+                input = input,
+                voice = voice,
+                file = file,
+                exaggeration = exaggeration,
+                cfg_weight = cfg_weight,
+                temperature = temperature,
+                device = device
+            ))
     }
 
     # Acquire GPU for local container backends
@@ -193,8 +192,7 @@ speech <- function (input, voice, file = NULL,
         on.exit(unlink(temp_file), add = TRUE)
         tryCatch({
                 writeBin(audio_data, temp_file)
-            }, error = function (e)
-            {
+            }, error = function (e) {
                 stop("Failed to write temp audio: ", e$message, call. = FALSE)
             })
 
@@ -204,8 +202,7 @@ speech <- function (input, voice, file = NULL,
     } else {
         tryCatch({
                 writeBin(audio_data, file)
-            }, error = function (e)
-            {
+            }, error = function (e) {
                 stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
             })
     }
@@ -215,8 +212,7 @@ speech <- function (input, voice, file = NULL,
 
 #' Apply speed adjustment using ffmpeg
 #' @keywords internal
-.apply_speed_ffmpeg <- function (input_file, output_file, speed)
-{
+.apply_speed_ffmpeg <- function (input_file, output_file, speed) {
     # atempo filter only accepts 0.5-2.0, so we chain for extreme values
     if (speed < 0.5) {
         # Chain multiple atempo filters for very slow speeds
@@ -258,8 +254,7 @@ speech <- function (input, voice, file = NULL,
 #' ElevenLabs TTS backend
 #' @keywords internal
 .tts_elevenlabs <- function (input, voice_id, file = NULL, model = NULL,
-                             stability = NULL, similarity_boost = NULL)
-{
+                             stability = NULL, similarity_boost = NULL) {
     api_key <- Sys.getenv("ELEVENLABS_API_KEY")
     if (api_key == "") {
         api_key <- getOption("tts.elevenlabs_key")
@@ -293,8 +288,7 @@ speech <- function (input, voice, file = NULL,
 
     response <- tryCatch(
         curl::curl_fetch_memory(url, handle = h),
-        error = function (e)
-        {
+        error = function (e) {
             stop("ElevenLabs connection failed: ", e$message, call. = FALSE)
         }
     )

@@ -21,7 +21,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' set_tts_base("http://localhost:4123")
+#' set_tts_base("http://localhost:7811")
 #'
 #' # Generate speech with a custom designed voice
 #' speech_design(
@@ -38,8 +38,7 @@
 #' )
 #' }
 speech_design <- function (input, voice_description, file = NULL,
-                           language = "English")
-{
+                           language = "English") {
     # Acquire GPU for qwen3 (this function is qwen3-only)
     .gpuctl_acquire("qwen3")
 
@@ -69,8 +68,7 @@ speech_design <- function (input, voice_description, file = NULL,
 
     tryCatch({
             writeBin(audio_data, file)
-        }, error = function (e)
-        {
+        }, error = function (e) {
             stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
         })
 

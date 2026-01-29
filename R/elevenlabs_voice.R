@@ -31,8 +31,7 @@
 #' }
 elevenlabs_voice_upload <- function (files, name, description = NULL,
                                      remove_background_noise = FALSE,
-                                     labels = NULL)
-{
+                                     labels = NULL) {
     # Validate inputs
     if (!is.character(files) || length(files) == 0) {
         stop("'files' must be a non-empty character vector of file paths", call. = FALSE)
@@ -95,8 +94,7 @@ elevenlabs_voice_upload <- function (files, name, description = NULL,
 #' voices <- elevenlabs_voices()
 #' print(voices)
 #' }
-elevenlabs_voices <- function ()
-{
+elevenlabs_voices <- function () {
     response <- .elevenlabs_request("voices")
     result <- jsonlite::fromJSON(rawToChar(response$content))
 
@@ -130,8 +128,7 @@ elevenlabs_voices <- function ()
 #' \dontrun{
 #' elevenlabs_voice_delete("abc123")
 #' }
-elevenlabs_voice_delete <- function (voice_id)
-{
+elevenlabs_voice_delete <- function (voice_id) {
     if (!is.character(voice_id) || length(voice_id) != 1 || nchar(voice_id) == 0) {
         stop("'voice_id' must be a non-empty character string", call. = FALSE)
     }

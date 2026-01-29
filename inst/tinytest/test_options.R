@@ -11,8 +11,8 @@ on.exit({
     }, add = TRUE)
 
 # Test set_tts_base
-set_tts_base("http://localhost:4123")
-expect_equal(getOption("tts.api_base"), "http://localhost:4123")
+set_tts_base("http://localhost:7810")
+expect_equal(getOption("tts.api_base"), "http://localhost:7810")
 
 # Test set_tts_key
 set_tts_key("test-key-123")

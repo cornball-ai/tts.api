@@ -4,7 +4,7 @@ An R client for Text-to-Speech APIs.
 
 Supports multiple backends:
 
-- **OpenAI-compatible**: OpenAI, Chatterbox, LM Studio, OpenWebUI, AnythingLLM
+- **OpenAI-compatible**: OpenAI, Chatterbox, Qwen3-TTS, LM Studio, OpenWebUI, AnythingLLM
 - **ElevenLabs**: Separate API with voice cloning and multilingual models
 
 ## Installation
@@ -33,13 +33,27 @@ docker build -f docker/Dockerfile.blackwell -t chatterbox-tts:blackwell .
 docker run -d \
   --name chatterbox-blackwell \
   --gpus all \
-  -p 4123:4123 \
+  -p 7810:4123 \
   -v $(pwd)/cache:/cache \
   -v $(pwd)/voices:/voices \
   chatterbox-tts:blackwell
 ```
 
 See [upstream repo](https://github.com/travisvn/chatterbox-tts-api) for CPU and other GPU options.
+
+### Qwen3-TTS (Local, OpenAI-compatible)
+
+Qwen3-TTS supports voice cloning, voice design, and multilingual synthesis.
+
+```bash
+docker run -d --gpus all --network=host --name qwen3-tts-api \
+  -v ~/.cache/huggingface:/cache \
+  -e PORT=7811 \
+  -e USE_FLASH_ATTENTION=false \
+  qwen3-tts-api:blackwell
+```
+
+Built-in voices: Vivian, Serena, Uncle_Fu, Dylan, Eric, Ryan, Aiden, Ono_Anna, Sohee
 
 ### OpenAI
 
@@ -61,7 +75,10 @@ See [upstream repo](https://github.com/travisvn/chatterbox-tts-api) for CPU and 
 library(tts.api)
 
 # For local Chatterbox server (OpenAI-compatible)
-set_tts_base("http://localhost:4123")
+set_tts_base("http://localhost:7810")
+
+# For local Qwen3-TTS server
+set_tts_base("http://localhost:7811")
 
 # For OpenAI
 set_tts_base("https://api.openai.com")
@@ -128,10 +145,52 @@ speech(
   similarity_boost = 0.75
 )
 
+# Qwen3-TTS with built-in voice
+speech(
+  input = "Hello from Qwen3!",
+  voice = "Vivian",
+  file = "hello_qwen3.wav",
+  backend = "qwen3"
+)
+
 # Return raw bytes (useful for Shiny)
 audio_bytes <- speech(
   input = "Hello!",
   voice = "alloy"
+)
+```
+
+### Voice cloning (Qwen3-TTS)
+
+``` r
+# Fast mode (x-vector only, no transcript needed)
+speech_clone(
+  input = "Hello in my cloned voice!",
+  voice_file = "reference.wav",
+  x_vector_only = TRUE,
+  file = "cloned.wav",
+  backend = "qwen3"
+)
+
+# High quality mode (with transcript)
+speech_clone(
+  input = "Hello in my cloned voice!",
+  voice_file = "reference.wav",
+  ref_text = "This is what I said in the recording.",
+  file = "cloned.wav",
+  backend = "qwen3"
+)
+```
+
+### Voice design (Qwen3-TTS only)
+
+Create a custom voice from a natural language description:
+
+``` r
+speech_design(
+  input = "Hello, I am your AI assistant.",
+  voice_description = "A warm, professional female voice with a slight British accent",
+  file = "designed_voice.wav"
 )
 ```
 
@@ -178,7 +237,7 @@ speech_clone(
 | `input` | All | Text to convert to speech |
 | `voice` | All | Voice name or ID |
 | `file` | All | Output file path (NULL returns raw bytes) |
-| `backend` | - | "auto", "chatterbox", "openai", or "elevenlabs" |
+| `backend` | - | "auto", "native", "chatterbox", "qwen3", "openai", "elevenlabs", or "fal" |
 | `model` | OpenAI, ElevenLabs | Model name |
 | `instructions` | OpenAI | Voice style instructions |
 | `temperature` | Chatterbox | Sampling temperature |
@@ -198,18 +257,31 @@ speech_clone(
 | `voice_name` | Name to save the voice as       |
 | `language`   | Language code (e.g., "en", "fr")|
 
-### `speech_clone()` (Chatterbox)
+### `speech_clone()` (Chatterbox/Qwen3-TTS)
+
+| Parameter      | Backend | Description                             |
+|----------------|---------|----------------------------------------|
+| `input`        | All | Text to convert to speech               |
+| `voice_file`   | All | Path to voice sample file               |
+| `file`         | All | Output file path (NULL returns raw bytes)|
+| `backend`      | - | "auto", "chatterbox", or "qwen3" |
+| `ref_text`     | Qwen3 | Transcript of reference audio (high quality) |
+| `x_vector_only`| Qwen3 | Use only speaker embedding (faster) |
+| `language`     | Qwen3 | Language for synthesis |
+| `exaggeration` | Chatterbox | Voice exaggeration                      |
+| `temperature`  | All | Sampling temperature                    |
+| `cfg_weight`   | Chatterbox | CFG weight                              |
+| `speed`        | All | Playback speed multiplier               |
+| `seed`         | All | Random seed for reproducibility         |
+
+### `speech_design()` (Qwen3-TTS only)
 
 | Parameter      | Description                             |
 |----------------|-----------------------------------------|
 | `input`        | Text to convert to speech               |
-| `voice_file`   | Path to voice sample file               |
+| `voice_description` | Natural language description of desired voice |
 | `file`         | Output file path (NULL returns raw bytes)|
-| `exaggeration` | Voice exaggeration                      |
-| `temperature`  | Sampling temperature                    |
-| `cfg_weight`   | CFG weight                              |
-| `speed`        | Playback speed multiplier               |
-| `seed`         | Random seed for reproducibility         |
+| `language`     | Language for synthesis (default "English") |
 
 ### Configuration functions
 
@@ -219,11 +291,18 @@ speech_clone(
 | `set_tts_key()` | Set OpenAI-compatible API key |
 | `set_elevenlabs_key()` | Set ElevenLabs API key |
 
+### Health checks
+
+| Function | Description |
+|----------|-------------|
+| `tts_health()` | Check server health (uses configured base URL) |
+| `chatterbox_available()` | Check if Chatterbox is running on port 7810 |
+| `qwen3_available()` | Check if Qwen3-TTS is running on port 7811 |
+
 ### Other functions
 
 - `voices()` - List available voices (OpenAI-compatible backends)
 - `languages()` - List supported languages
-- `tts_health()` - Check server health (OpenAI-compatible backends)
 
 ## Dependencies
 

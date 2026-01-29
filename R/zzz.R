@@ -1,6 +1,5 @@
 #' @keywords internal
-.onLoad <- function (libname, pkgname)
-{
+.onLoad <- function (libname, pkgname) {
     op <- options()
     op_tts.api <- list(
         tts.api_base = NULL,

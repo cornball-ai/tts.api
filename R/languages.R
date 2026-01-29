@@ -7,16 +7,14 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' set_tts_base("http://localhost:4123")
+#' set_tts_base("http://localhost:7810")
 #' langs <- languages()
 #' print(langs)
 #' }
-languages <- function ()
-{
+languages <- function () {
     result <- tryCatch(
         .tts_get("/languages"),
-        error = function (e)
-        {
+        error = function (e) {
             message("Language listing not available from this server.\n",
                 "Error: ", e$message)
             return(NULL)
