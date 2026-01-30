@@ -29,7 +29,10 @@
 #' @param response_format Character or NULL. Audio format (e.g., "wav", "mp3").
 #'   If NULL and file is provided, inferred from file extension.
 #' @param instructions Character or NULL. Instructions for how the voice should
-#'   speak (OpenAI-specific, e.g., "Speak in a cheerful and positive tone.").
+#'   speak (OpenAI/Qwen3, e.g., "Speak in a cheerful and positive tone.").
+#' @param language Character or NULL. Language for synthesis (Qwen3-specific).
+#'   Options: "English", "Chinese", "Japanese", "Korean", "French", "German",
+#'   "Spanish", "Italian", "Portuguese", "Russian".
 #' @param device Character. Device for native backend: "cuda", "cpu", or "mps".
 #'   Default "cuda".
 #'
@@ -60,7 +63,7 @@ tts <- function (input, voice, file = NULL,
                     exaggeration = NULL, cfg_weight = NULL, stability = NULL,
                     similarity_boost = NULL, seed = NULL,
                     response_format = NULL, instructions = NULL,
-                    device = "cuda") {
+                    language = NULL, device = "cuda") {
     backend <- match.arg(backend)
 
     # Validate required parameters early (before backend dispatch)
@@ -163,7 +166,15 @@ tts <- function (input, voice, file = NULL,
     if (!is.null(exaggeration)) body$exaggeration <- exaggeration
     if (!is.null(cfg_weight)) body$cfg_weight <- cfg_weight
     if (!is.null(seed)) body$seed <- as.integer(seed)
-    if (!is.null(instructions)) body$instructions <- instructions
+    if (!is.null(instructions)) {
+        # qwen3 uses 'instruct', OpenAI uses 'instructions'
+        if (backend == "qwen3") {
+            body$instruct <- instructions
+        } else {
+            body$instructions <- instructions
+        }
+    }
+    if (!is.null(language)) body$language <- language
 
     # Handle response format
     if (!is.null(response_format)) {

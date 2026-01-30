@@ -91,7 +91,7 @@ clear_native_chatterbox_cache <- function () {
     cfg_weight <- cfg_weight %||% 0.5
     temperature <- temperature %||% 0.8
 
-    # Generate speech
+    # Generate speech (traced = TRUE for ~5x faster inference)
     result <- tryCatch(
         chatterbox::tts(
             model = model,
@@ -99,7 +99,8 @@ clear_native_chatterbox_cache <- function () {
             voice = voice,
             exaggeration = exaggeration,
             cfg_weight = cfg_weight,
-            temperature = temperature
+            temperature = temperature,
+            traced = TRUE
         ),
         error = function (e) {
             stop(

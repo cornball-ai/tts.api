@@ -18,6 +18,7 @@ tts(
   seed = NULL,
   response_format = NULL,
   instructions = NULL,
+  language = NULL,
   device = "cuda"
 )
 }
@@ -61,7 +62,11 @@ For Chatterbox: optional, often ignored.}
 If NULL and file is provided, inferred from file extension.}
 
 \item{instructions}{Character or NULL. Instructions for how the voice should
-speak (OpenAI-specific, e.g., "Speak in a cheerful and positive tone.").}
+speak (OpenAI/Qwen3, e.g., "Speak in a cheerful and positive tone.").}
+
+\item{language}{Character or NULL. Language for synthesis (Qwen3-specific).
+Options: "English", "Chinese", "Japanese", "Korean", "French", "German",
+"Spanish", "Italian", "Portuguese", "Russian".}
 
 \item{device}{Character. Device for native backend: "cuda", "cpu", or "mps".
 Default "cuda".}
