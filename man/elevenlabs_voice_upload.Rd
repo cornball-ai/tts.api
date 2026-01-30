@@ -37,7 +37,7 @@ voice <- elevenlabs_voice_upload(
 )
 
 # Use the cloned voice
-speech("Hello!", voice = voice$voice_id, backend = "elevenlabs")
+tts("Hello!", voice = voice$voice_id, backend = "elevenlabs")
 
 # Clone from multiple samples
 voice <- elevenlabs_voice_upload(

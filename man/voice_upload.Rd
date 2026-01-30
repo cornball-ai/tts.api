@@ -17,7 +17,7 @@ Invisibly returns the response from the server.
 }
 \description{
 Uploads a voice sample to the server's voice library for reuse.
-Once uploaded, the voice can be used by name in speech().
+Once uploaded, the voice can be used by name in tts().
 }
 \examples{
 \dontrun{
@@ -37,7 +37,7 @@ voice_upload(
 )
 
 # Then use it by name
-speech(
+tts(
   input = "Hello with my custom voice!",
   voice = "my-custom-voice",
   file = "output.wav"

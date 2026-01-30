@@ -109,14 +109,14 @@ voices()
 
 ``` r
 # Basic usage (uses configured base URL)
-speech(
+tts(
   input = "Hello, world!",
   voice = "alloy",
   file = "hello.mp3"
 )
 
 # OpenAI with voice instructions
-speech(
+tts(
   input = "Today is a wonderful day to build something people love!",
   voice = "coral",
   file = "speech.mp3",
@@ -126,7 +126,7 @@ speech(
 )
 
 # Chatterbox with custom parameters
-speech(
+tts(
   input = "Hello with my custom voice!",
   voice = "MyCustomVoice",
   file = "speech.wav",
@@ -136,7 +136,7 @@ speech(
 )
 
 # ElevenLabs (different API, not OpenAI-compatible)
-speech(
+tts(
   input = "Hello from ElevenLabs!",
   voice = "21m00Tcm4TlvDq8ikWAM",  # Rachel voice ID
   file = "hello_eleven.mp3",
@@ -146,7 +146,7 @@ speech(
 )
 
 # Qwen3-TTS with built-in voice
-speech(
+tts(
   input = "Hello from Qwen3!",
   voice = "Vivian",
   file = "hello_qwen3.wav",
@@ -154,7 +154,7 @@ speech(
 )
 
 # Return raw bytes (useful for Shiny)
-audio_bytes <- speech(
+audio_bytes <- tts(
   input = "Hello!",
   voice = "alloy"
 )
@@ -213,7 +213,7 @@ voice_upload(
 )
 
 # Use the saved voice by name
-speech(
+tts(
   input = "Hello with my custom voice!",
   voice = "my-custom-voice",
   file = "output.wav"
@@ -230,7 +230,7 @@ speech_clone(
 
 ## Parameters
 
-### `speech()`
+### `tts()`
 
 | Parameter | Backend | Description |
 |-----------|---------|-------------|

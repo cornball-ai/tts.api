@@ -20,7 +20,7 @@ Returns TRUE/FALSE without throwing errors.
 \examples{
 \dontrun{
   if (chatterbox_available()) {
-    speech("Hello", voice = "default", backend = "chatterbox")
+    tts("Hello", voice = "default", backend = "chatterbox")
   }
 }
 }

@@ -20,7 +20,7 @@ by checking for the qwen3-specific /v1/audio/speech/design endpoint.
 \examples{
 \dontrun{
   if (qwen3_available()) {
-    speech("Hello", voice = "Vivian", backend = "qwen3")
+    tts("Hello", voice = "Vivian", backend = "qwen3")
   }
 }
 }

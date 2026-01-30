@@ -1,7 +1,7 @@
 #' Upload Voice to Library
 #'
 #' Uploads a voice sample to the server's voice library for reuse.
-#' Once uploaded, the voice can be used by name in speech().
+#' Once uploaded, the voice can be used by name in tts().
 #'
 #' @param voice_file Character. Path to the voice sample file (mp3, wav, etc.).
 #' @param voice_name Character. Name to save the voice as.
@@ -28,7 +28,7 @@
 #' )
 #'
 #' # Then use it by name
-#' speech(
+#' tts(
 #'   input = "Hello with my custom voice!",
 #'   voice = "my-custom-voice",
 #'   file = "output.wav"
@@ -130,7 +130,7 @@ voice_upload <- function (voice_file, voice_name, language = NULL) {
 #'   success <- chatterbox_voice_upload("my_voice.wav", "my-voice")
 #'
 #'   if (success) {
-#'     speech("Hello!", voice = "my-voice", backend = "chatterbox")
+#'     tts("Hello!", voice = "my-voice", backend = "chatterbox")
 #'   }
 #' }
 chatterbox_voice_upload <- function(

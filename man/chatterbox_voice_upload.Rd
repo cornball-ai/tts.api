@@ -27,7 +27,7 @@ Does not require setting the API base URL first.
   success <- chatterbox_voice_upload("my_voice.wav", "my-voice")
 
   if (success) {
-    speech("Hello!", voice = "my-voice", backend = "chatterbox")
+    tts("Hello!", voice = "my-voice", backend = "chatterbox")
   }
 }
 }

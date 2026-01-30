@@ -1,9 +1,9 @@
 % tinyrox says don't edit this manually, but it can't stop you!
-\name{speech}
-\alias{speech}
+\name{tts}
+\alias{tts}
 \title{Generate Speech from Text}
 \usage{
-speech(
+tts(
   input,
   voice,
   file = NULL,
@@ -77,18 +77,18 @@ local Chatterbox container, OpenAI TTS API, or ElevenLabs API.
 \examples{
 \dontrun{
 # Using native R chatterbox package (no container needed)
-speech("Hello, world!", voice = "path/to/reference.wav",
+tts("Hello, world!", voice = "path/to/reference.wav",
        file = "hello.wav", backend = "native")
 
 # Using local Chatterbox container
 set_tts_base("http://localhost:7810")
-speech("Hello, world!", voice = "FatherChristmas", file = "hello.wav")
+tts("Hello, world!", voice = "FatherChristmas", file = "hello.wav")
 
 # Using OpenAI TTS
-speech("Hello, world!", voice = "nova", file = "hello.mp3", backend = "openai")
+tts("Hello, world!", voice = "nova", file = "hello.mp3", backend = "openai")
 
 # Using ElevenLabs
-speech("Hello, world!", voice = "XpDLYThV0yUAFjVTok7m",
+tts("Hello, world!", voice = "XpDLYThV0yUAFjVTok7m",
        file = "hello.mp3", backend = "elevenlabs")
 }
 }

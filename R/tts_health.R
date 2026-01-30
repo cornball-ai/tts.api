@@ -10,7 +10,7 @@
 #' @examples
 #' \dontrun{
 #'   if (chatterbox_available()) {
-#'     speech("Hello", voice = "default", backend = "chatterbox")
+#'     tts("Hello", voice = "default", backend = "chatterbox")
 #'   }
 #' }
 chatterbox_available <- function (port = NULL, timeout = 2) {
@@ -39,7 +39,7 @@ chatterbox_available <- function (port = NULL, timeout = 2) {
 #' @examples
 #' \dontrun{
 #'   if (qwen3_available()) {
-#'     speech("Hello", voice = "Vivian", backend = "qwen3")
+#'     tts("Hello", voice = "Vivian", backend = "qwen3")
 #'   }
 #' }
 qwen3_available <- function(port = NULL, timeout = 2)
