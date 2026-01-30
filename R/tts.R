@@ -58,7 +58,7 @@
 #'        file = "hello.mp3", backend = "elevenlabs")
 #' }
 tts <- function (input, voice, file = NULL,
-                    backend = c("auto", "native", "chatterbox", "qwen3", "openai", "elevenlabs", "fal"),
+                    backend = c("auto", "native", "chatterbox", "qwen3", "openai", "elevenlabs"),
                     model = NULL, temperature = NULL, speed = NULL,
                     exaggeration = NULL, cfg_weight = NULL, stability = NULL,
                     similarity_boost = NULL, seed = NULL,
@@ -103,14 +103,6 @@ tts <- function (input, voice, file = NULL,
             ))
     }
 
-    # Acquire GPU for local container backends
-    if (backend == "chatterbox") {
-        .gpuctl_acquire("chatterbox")
-    }
-    if (backend == "qwen3") {
-        .gpuctl_acquire("qwen3")
-    }
-
     # Dispatch to ElevenLabs (different API structure)
     if (backend == "elevenlabs") {
         return(.tts_elevenlabs(
@@ -120,16 +112,6 @@ tts <- function (input, voice, file = NULL,
                 model = model,
                 stability = stability,
                 similarity_boost = similarity_boost
-            ))
-    }
-
-    # Dispatch to fal.ai
-    if (backend == "fal") {
-        return(.tts_fal(
-                input = input,
-                voice = voice,
-                file = file,
-                model = model
             ))
     }
 
@@ -327,74 +309,4 @@ tts <- function (input, voice, file = NULL,
     invisible(file)
 }
 
-#' fal.ai TTS backend
-#' @keywords internal
-.tts_fal <- function(
-    input,
-    voice = NULL,
-    file = NULL,
-    model = NULL
-) {
-    if (!requireNamespace("fal.api", quietly = TRUE)) {
-        stop("fal.api package is required for fal backend.\n",
-            "Install with: remotes::install_github('cornball-ai/fal.api')",
-            call. = FALSE)
-    }
-
-    # Default to F5-TTS (good quality, supports voice cloning)
-    model <- model %||% "fal-ai/f5-tts"
-
-    # Build request - voice can be a reference audio URL or path
-    params <- list(gen_text = input)
-
-    # If voice looks like a file path, upload it
-    if (!is.null(voice)) {
-        if (file.exists(voice)) {
-            params$ref_audio_url <- fal.api::.fal_upload_file(voice)
-        } else if (grepl("^https?://", voice)) {
-            params$ref_audio_url <- voice
-        } else {
-            # Assume it's a voice name/ID for models that support named voices
-            params$voice <- voice
-        }
-    }
-
-    # Run TTS
-    result <- fal.api::fal_generate(
-        model = model,
-        gen_text = input,
-        ref_audio_url = params$ref_audio_url,
-        .timeout = getOption("tts.timeout", 120)
-    )
-
-    # Get audio URL from result
-    audio_url <- result$audio$url %||% result$audio_url %||% result$url
-
-    if (is.null(audio_url)) {
-        stop("fal.ai TTS did not return audio URL", call. = FALSE)
-    }
-
-    # Download audio
-    h <- curl::new_handle()
-    curl::handle_setopt(h, timeout = getOption("tts.timeout", 120))
-    response <- curl::curl_fetch_memory(audio_url, handle = h)
-
-    if (response$status_code >= 400) {
-        stop("Failed to download audio from fal.ai: HTTP ", response$status_code, call. = FALSE)
-    }
-
-    audio_data <- response$content
-
-    if (is.null(file)) {
-        return(audio_data)
-    }
-
-    tryCatch({
-            writeBin(audio_data, file)
-        }, error = function(e) {
-            stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
-        })
-
-    invisible(file)
-}
 

@@ -7,7 +7,7 @@ tts(
   input,
   voice,
   file = NULL,
-  backend = c("auto", "native", "chatterbox", "qwen3", "openai", "elevenlabs", "fal"),
+  backend = c("auto", "native", "chatterbox", "qwen3", "openai", "elevenlabs"),
   model = NULL,
   temperature = NULL,
   speed = NULL,
