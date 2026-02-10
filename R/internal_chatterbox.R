@@ -93,7 +93,7 @@ clear_native_chatterbox_cache <- function () {
 
     # Generate speech (traced = TRUE for ~5x faster inference)
     result <- tryCatch(
-        chatterbox::tts(
+        chatterbox::generate(
             model = model,
             text = input,
             voice = voice,
