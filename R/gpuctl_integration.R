@@ -76,6 +76,13 @@
 
     tryCatch({
             gpu.ctl::gpu_acquire(service$name)
+
+            # Auto-set tts.api_base from gpu.ctl's service URL
+            url <- gpu.ctl::gpu_service_url(service$name)
+            if (!is.null(url)) {
+                options(tts.api_base = url)
+            }
+
             invisible(TRUE)
         }, error = function (e) {
             warning("gpu.ctl: ", e$message, call. = FALSE)

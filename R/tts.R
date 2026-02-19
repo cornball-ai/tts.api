@@ -90,6 +90,11 @@ tts <- function (input, voice, file = NULL,
         }
     }
 
+    # Auto-acquire GPU for container backends via gpu.ctl
+    if (backend %in% c("chatterbox", "qwen3")) {
+        .gpuctl_acquire(backend)
+    }
+
     # Dispatch to native chatterbox package
     if (backend == "native") {
         return(.via_chatterbox(
