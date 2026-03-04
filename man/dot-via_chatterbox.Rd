@@ -3,15 +3,8 @@
 \alias{.via_chatterbox}
 \title{Internal: Generate speech via native chatterbox package}
 \usage{
-.via_chatterbox(
-  input,
-  voice,
-  file = NULL,
-  exaggeration = NULL,
-  cfg_weight = NULL,
-  temperature = NULL,
-  device = "cuda"
-)
+.via_chatterbox(input, voice, file = NULL, exaggeration = NULL,
+                cfg_weight = NULL, temperature = NULL, device = "cuda")
 }
 \arguments{
 \item{input}{Character. Text to convert to speech.}

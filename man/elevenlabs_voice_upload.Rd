@@ -3,13 +3,8 @@
 \alias{elevenlabs_voice_upload}
 \title{Upload Voice to ElevenLabs (Instant Voice Clone)}
 \usage{
-elevenlabs_voice_upload(
-  files,
-  name,
-  description = NULL,
-  remove_background_noise = FALSE,
-  labels = NULL
-)
+elevenlabs_voice_upload(files, name, description = NULL,
+                        remove_background_noise = FALSE, labels = NULL)
 }
 \arguments{
 \item{files}{Character vector. Paths to audio files (1-25 files, each up to 10MB).}
