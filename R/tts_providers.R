@@ -106,15 +106,11 @@ tts_voices <- function (provider, base_url = NULL, timeout = 2) {
         }
     }
 
-    # For Chatterbox, try reading from filesystem as fallback
+    # For Chatterbox, try reading from voice library as fallback
     if (provider == "Chatterbox (Local)") {
-        voices_dir <- Sys.getenv("CHATTERBOX_VOICES_DIR", "~/chatterbox-tts-api/voices")
-        voices_dir <- path.expand(voices_dir)
-        if (dir.exists(voices_dir)) {
-            files <- list.files(voices_dir, pattern = "\\.(mp3|wav)$", ignore.case = TRUE)
-            if (length(files) > 0) {
-                return(tools::file_path_sans_ext(files))
-            }
+        lib <- voice_library()
+        if (length(lib) > 0) {
+            return(names(lib))
         }
     }
 

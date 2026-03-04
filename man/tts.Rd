@@ -3,24 +3,12 @@
 \alias{tts}
 \title{Generate Speech from Text}
 \usage{
-tts(
-  input,
-  voice,
-  file = NULL,
-  backend = c("auto", "native", "chatterbox", "qwen3", "openai", "elevenlabs"),
-  model = NULL,
-  temperature = NULL,
-  speed = NULL,
-  exaggeration = NULL,
-  cfg_weight = NULL,
-  stability = NULL,
-  similarity_boost = NULL,
-  seed = NULL,
-  response_format = NULL,
-  instructions = NULL,
-  language = NULL,
-  device = "cuda"
-)
+tts(input, voice, file = NULL,
+    backend = c("auto", "native", "chatterbox", "qwen3", "openai", "elevenlabs"),
+    model = NULL, temperature = NULL, speed = NULL, exaggeration = NULL,
+    cfg_weight = NULL, stability = NULL, similarity_boost = NULL, seed = NULL,
+    response_format = NULL, instructions = NULL, language = NULL,
+    device = "cuda")
 }
 \arguments{
 \item{input}{Character. The text to convert to speech.}

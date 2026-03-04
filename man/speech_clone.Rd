@@ -3,20 +3,10 @@
 \alias{speech_clone}
 \title{Generate Speech with Voice Cloning}
 \usage{
-speech_clone(
-  input,
-  voice_file,
-  file = NULL,
-  backend = c("auto", "chatterbox", "qwen3"),
-  ref_text = NULL,
-  x_vector_only = FALSE,
-  language = NULL,
-  exaggeration = NULL,
-  temperature = NULL,
-  cfg_weight = NULL,
-  speed = NULL,
-  seed = NULL
-)
+speech_clone(input, voice_file, file = NULL,
+             backend = c("auto", "chatterbox", "qwen3"), ref_text = NULL,
+             x_vector_only = FALSE, language = NULL, exaggeration = NULL,
+             temperature = NULL, cfg_weight = NULL, speed = NULL, seed = NULL)
 }
 \arguments{
 \item{input}{Character. The text to convert to speech.}
