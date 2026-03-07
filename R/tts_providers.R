@@ -125,55 +125,37 @@ tts_voices <- function (provider, base_url = NULL, timeout = 2) {
 
 #' Fetch voices from API
 #' @keywords internal
-.fetch_voices_from_api <- function(
-    base_url,
-    timeout = 2
-) {
-    # Try /voices endpoint (Chatterbox style)
-    url <- paste0(base_url, "/voices")
-    res <- tryCatch({
-            curl::curl_fetch_memory(url, handle = curl::new_handle(timeout = timeout))
-        }, error = function(e) NULL)
+.fetch_voices_from_api <- function(base_url, timeout = 2) {
+    # Try /v1/audio/voices first (OpenAI-compatible), then /voices
+    for (path in c("/v1/audio/voices", "/voices")) {
+        url <- paste0(base_url, path)
+        res <- tryCatch(
+            curl::curl_fetch_memory(url, handle = curl::new_handle(timeout = timeout)),
+            error = function(e) NULL
+        )
+        if (is.null(res) || res$status_code != 200) next
 
-    if (!is.null(res) && res$status_code == 200) {
         content <- jsonlite::fromJSON(rawToChar(res$content))
-        if (is.character(content)) {
-            return(content)
-        }
-        if (is.list(content) && !is.null(content$voices)) {
-            voices <- content$voices
-            # Chatterbox returns voices as data.frame with name column
-            if (is.data.frame(voices) && "name" %in% names(voices)) {
-                return(voices$name)
-            }
-            # Simple array of strings
-            if (is.character(voices)) {
-                return(voices)
-            }
-            return(unlist(voices))
-        }
-        if (is.data.frame(content) && "name" %in% names(content)) {
-            return(content$name)
-        }
-    }
 
-    # Try /v1/audio/voices endpoint (OpenAI style)
-    url <- paste0(base_url, "/v1/audio/voices")
-    res <- tryCatch({
-            curl::curl_fetch_memory(url, handle = curl::new_handle(timeout = timeout))
-        }, error = function(e) NULL)
+        # Plain character vector
+        if (is.character(content)) return(content)
 
-    if (!is.null(res) && res$status_code == 200) {
-        content <- jsonlite::fromJSON(rawToChar(res$content))
-        if (is.list(content) && !is.null(content$voices)) {
-            return(unlist(content$voices))
+        # { "voices": [...] } — most common format
+        voices <- content$voices
+        if (!is.null(voices)) {
+            if (is.data.frame(voices) && "name" %in% names(voices)) return(voices$name)
+            if (is.character(voices)) return(voices)
         }
-        if (is.list(content) && !is.null(content$data)) {
-            if (is.data.frame(content$data) && "voice_id" %in% names(content$data)) {
-                return(content$data$voice_id)
-            }
-            return(unlist(content$data))
+
+        # { "data": [...] } — some OpenAI-style responses
+        data <- content$data
+        if (!is.null(data)) {
+            if (is.data.frame(data) && "name" %in% names(data)) return(data$name)
+            if (is.character(data)) return(data)
         }
+
+        # Top-level data.frame
+        if (is.data.frame(content) && "name" %in% names(content)) return(content$name)
     }
 
     NULL
