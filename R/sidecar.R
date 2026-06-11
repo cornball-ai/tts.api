@@ -3,9 +3,10 @@
 # the call that made it, at <output>.json. The API client is the only place
 # the resolved call exists (defaults filled, sizes computed), and the sidecar
 # rides with the media file -- it survives any downstream bundle or timeline
-# rebuild. cornductor scoops sidecars into the OTIO media-reference metadata.
-# Convention shared across cornball.ai generation packages (cornball_sidecar
-# schema v1: package, version, fn, request, elapsed, created).
+# rebuild. Downstream timeline tooling can lift these records into edit
+# metadata. Convention shared across cornball.ai generation packages
+# (cornball_sidecar schema v1: package, version, fn, request, elapsed,
+# created).
 
 # Arm a sidecar for the calling function: registers an on.exit hook that, on
 # return, writes <output>.json when the output file exists with an mtime at or
