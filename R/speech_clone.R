@@ -60,6 +60,7 @@ speech_clone <- function (input, voice_file, file = NULL,
                           language = NULL, exaggeration = NULL,
                           temperature = NULL, cfg_weight = NULL, speed = NULL,
                           seed = NULL) {
+    .sidecar_arm(environment(), "file")
     backend <- match.arg(backend)
 
     # Auto-detect backend: qwen3 has /v1/audio/speech/design endpoint
