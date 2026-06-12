@@ -64,6 +64,7 @@ tts <- function (input, voice, file = NULL,
                     similarity_boost = NULL, seed = NULL,
                     response_format = NULL, instructions = NULL,
                     language = NULL, device = "cuda") {
+    .sidecar_arm(environment(), "file")
     backend <- match.arg(backend)
 
     # Validate required parameters early (before backend dispatch)
