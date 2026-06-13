@@ -5,20 +5,25 @@
 #'
 #' @param input Character. The text to convert to speech.
 #' @param voice Character. The voice to use for synthesis.
-#'   For native: path to voice reference audio file.
+#'   For Chatterbox (package or container) and Qwen3: a voice-library name (e.g.
+#'   "FatherChristmas") or a path to a reference audio file. The package source
+#'   resolves names via \code{\link{voice_file}}; containers resolve them
+#'   server-side.
 #'   For OpenAI: "alloy", "echo", "fable", "onyx", "nova", "shimmer".
 #'   For ElevenLabs: voice ID (e.g., "XpDLYThV0yUAFjVTok7m").
-#'   For Chatterbox container: custom voice names uploaded via voice_upload().
 #' @param file Character or NULL. Output file path. If NULL, returns raw bytes.
-#' @param backend Character. Backend to use: "native" for R chatterbox package,
-#'   "chatterbox" for local Chatterbox container, "qwen3" for Qwen3-TTS container,
-#'   "openai" for OpenAI TTS API, "elevenlabs" for ElevenLabs API,
-#'   "fal" for fal.ai TTS models, or "auto" to use native if available, else
-#'   configured API base.
-#' @param model Character or NULL. The model to use.
+#' @param backend Character. The TTS engine: "chatterbox", "qwen3", "openai",
+#'   "elevenlabs", or "auto" (defaults to "chatterbox"). This selects *what*
+#'   synthesizes; see \code{source} for *where* it runs.
+#' @param source Character. Where the engine runs: "package" for the in-process
+#'   R chatterbox package, "api" for an HTTP service (container or hosted), or
+#'   "auto" (default) which uses the package for chatterbox when it is installed,
+#'   and the API otherwise. Only "chatterbox" has a package source; the other
+#'   engines are API-only.
+#' @param model Character or NULL. The sub-model to use.
+#'   For Chatterbox package source: "turbo" loads Chatterbox Turbo.
 #'   For OpenAI: "tts-1" or "tts-1-hd".
 #'   For ElevenLabs: "eleven_multilingual_v2" (default), "eleven_turbo_v2_5", etc.
-#'   For Chatterbox: optional, often ignored.
 #' @param temperature Numeric or NULL. Sampling temperature for generation.
 #' @param speed Numeric or NULL. Speed multiplier for the audio.
 #' @param exaggeration Numeric or NULL. Exaggeration parameter (Chatterbox-specific).
@@ -42,13 +47,17 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' # Using native R chatterbox package (no container needed)
-#' tts("Hello, world!", voice = "path/to/reference.wav",
-#'        file = "hello.wav", backend = "native")
+#' # Native R chatterbox package, no container (source resolves to "package")
+#' tts("Hello, world!", voice = "FatherChristmas", file = "hello.mp3")
 #'
-#' # Using local Chatterbox container
-#' set_tts_base("http://localhost:7810")
-#' tts("Hello, world!", voice = "FatherChristmas", file = "hello.wav")
+#' # Chatterbox Turbo via the package
+#' tts("Hello, world!", voice = "FatherChristmas", file = "hello.mp3",
+#'     source = "package", model = "turbo")
+#'
+#' # Chatterbox over an HTTP container
+#' set_tts_base("http://troy-g5:7810")
+#' tts("Hello, world!", voice = "FatherChristmas", file = "hello.wav",
+#'     source = "api")
 #'
 #' # Using OpenAI TTS
 #' tts("Hello, world!", voice = "nova", file = "hello.mp3", backend = "openai")
@@ -58,14 +67,25 @@
 #'        file = "hello.mp3", backend = "elevenlabs")
 #' }
 tts <- function (input, voice, file = NULL,
-                    backend = c("auto", "native", "chatterbox", "qwen3", "openai", "elevenlabs"),
+                    backend = c("auto", "chatterbox", "qwen3", "openai", "elevenlabs"),
+                    source = c("auto", "api", "package"),
                     model = NULL, temperature = NULL, speed = NULL,
                     exaggeration = NULL, cfg_weight = NULL, stability = NULL,
                     similarity_boost = NULL, seed = NULL,
                     response_format = NULL, instructions = NULL,
                     language = NULL, device = "cuda") {
     .sidecar_arm(environment(), "file")
+
+    # Deprecated: backend = "native" was the in-process chatterbox package,
+    # now expressed as backend = "chatterbox", source = "package".
+    if (identical(backend, "native")) {
+        warning("backend = 'native' is deprecated; use ",
+                "backend = 'chatterbox', source = 'package'.", call. = FALSE)
+        backend <- "chatterbox"
+        if (missing(source)) source <- "package"
+    }
     backend <- match.arg(backend)
+    source <- match.arg(source)
 
     # Validate required parameters early (before backend dispatch)
     if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
@@ -75,29 +95,29 @@ tts <- function (input, voice, file = NULL,
         stop("'voice' must be a non-empty character string", call. = FALSE)
     }
 
-    # Auto mode: prefer native if available, else use API
+    # Resolve engine: "auto" defaults to chatterbox.
     if (backend == "auto") {
-        if (.has_chatterbox()) {
-            backend <- "native"
-        } else if (!is.null(getOption("tts.api_base"))) {
-            backend <- "chatterbox"
+        backend <- "chatterbox"
+    }
+
+    # Resolve where it runs: "auto" prefers the in-process package for
+    # chatterbox when installed, otherwise the API.
+    if (source == "auto") {
+        source <- if (backend == "chatterbox" && .has_chatterbox()) {
+            "package"
         } else {
-            stop(
-                "No TTS backend available.\n",
-                "Either install chatterbox: remotes::install_github('cornball-ai/chatterbox')\n",
-                "Or set an API endpoint with set_tts_base()",
-                call. = FALSE
-            )
+            "api"
         }
     }
 
-    # Auto-acquire GPU for container backends via gpu.ctl
-    if (backend %in% c("chatterbox", "qwen3")) {
-        .gpuctl_acquire(backend)
+    # Only chatterbox has a package implementation.
+    if (source == "package" && backend != "chatterbox") {
+        stop("source = 'package' is only available for backend = 'chatterbox'; ",
+             backend, " runs via the API (source = 'api').", call. = FALSE)
     }
 
-    # Dispatch to native chatterbox package
-    if (backend == "native") {
+    # Dispatch to the in-process chatterbox package
+    if (source == "package") {
         return(.via_chatterbox(
                 input = input,
                 voice = voice,
@@ -105,8 +125,14 @@ tts <- function (input, voice, file = NULL,
                 exaggeration = exaggeration,
                 cfg_weight = cfg_weight,
                 temperature = temperature,
-                device = device
+                device = device,
+                turbo = identical(model, "turbo")
             ))
+    }
+
+    # Auto-acquire GPU for container backends via gpu.ctl
+    if (backend %in% c("chatterbox", "qwen3")) {
+        .gpuctl_acquire(backend)
     }
 
     # Dispatch to ElevenLabs (different API structure)
