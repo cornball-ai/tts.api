@@ -4,33 +4,39 @@
 \title{Generate Speech from Text}
 \usage{
 tts(input, voice, file = NULL,
-    backend = c("auto", "native", "chatterbox", "qwen3", "openai", "elevenlabs"),
-    model = NULL, temperature = NULL, speed = NULL, exaggeration = NULL,
-    cfg_weight = NULL, stability = NULL, similarity_boost = NULL, seed = NULL,
-    response_format = NULL, instructions = NULL, language = NULL,
-    device = "cuda")
+    backend = c("auto", "chatterbox", "qwen3", "openai", "elevenlabs"),
+    source = c("auto", "api", "package"), model = NULL, temperature = NULL,
+    speed = NULL, exaggeration = NULL, cfg_weight = NULL, stability = NULL,
+    similarity_boost = NULL, seed = NULL, response_format = NULL,
+    instructions = NULL, language = NULL, device = "cuda")
 }
 \arguments{
 \item{input}{Character. The text to convert to speech.}
 
 \item{voice}{Character. The voice to use for synthesis.
-For native: path to voice reference audio file.
+For Chatterbox (package or container) and Qwen3: a voice-library name (e.g.
+"FatherChristmas") or a path to a reference audio file. The package source
+resolves names via \code{\link{voice_file}}; containers resolve them
+server-side.
 For OpenAI: "alloy", "echo", "fable", "onyx", "nova", "shimmer".
-For ElevenLabs: voice ID (e.g., "XpDLYThV0yUAFjVTok7m").
-For Chatterbox container: custom voice names uploaded via voice_upload().}
+For ElevenLabs: voice ID (e.g., "XpDLYThV0yUAFjVTok7m").}
 
 \item{file}{Character or NULL. Output file path. If NULL, returns raw bytes.}
 
-\item{backend}{Character. Backend to use: "native" for R chatterbox package,
-"chatterbox" for local Chatterbox container, "qwen3" for Qwen3-TTS container,
-"openai" for OpenAI TTS API, "elevenlabs" for ElevenLabs API,
-"fal" for fal.ai TTS models, or "auto" to use native if available, else
-configured API base.}
+\item{backend}{Character. The TTS engine: "chatterbox", "qwen3", "openai",
+"elevenlabs", or "auto" (defaults to "chatterbox"). This selects *what*
+synthesizes; see \code{source} for *where* it runs.}
 
-\item{model}{Character or NULL. The model to use.
+\item{source}{Character. Where the engine runs: "package" for the in-process
+R chatterbox package, "api" for an HTTP service (container or hosted), or
+"auto" (default) which uses the package for chatterbox when it is installed,
+and the API otherwise. Only "chatterbox" has a package source; the other
+engines are API-only.}
+
+\item{model}{Character or NULL. The sub-model to use.
+For Chatterbox package source: "turbo" loads Chatterbox Turbo.
 For OpenAI: "tts-1" or "tts-1-hd".
-For ElevenLabs: "eleven_multilingual_v2" (default), "eleven_turbo_v2_5", etc.
-For Chatterbox: optional, often ignored.}
+For ElevenLabs: "eleven_multilingual_v2" (default), "eleven_turbo_v2_5", etc.}
 
 \item{temperature}{Numeric or NULL. Sampling temperature for generation.}
 
@@ -69,13 +75,17 @@ local Chatterbox container, OpenAI TTS API, or ElevenLabs API.
 }
 \examples{
 \dontrun{
-# Using native R chatterbox package (no container needed)
-tts("Hello, world!", voice = "path/to/reference.wav",
-       file = "hello.wav", backend = "native")
+# Native R chatterbox package, no container (source resolves to "package")
+tts("Hello, world!", voice = "FatherChristmas", file = "hello.mp3")
 
-# Using local Chatterbox container
-set_tts_base("http://localhost:7810")
-tts("Hello, world!", voice = "FatherChristmas", file = "hello.wav")
+# Chatterbox Turbo via the package
+tts("Hello, world!", voice = "FatherChristmas", file = "hello.mp3",
+    source = "package", model = "turbo")
+
+# Chatterbox over an HTTP container
+set_tts_base("http://troy-g5:7810")
+tts("Hello, world!", voice = "FatherChristmas", file = "hello.wav",
+    source = "api")
 
 # Using OpenAI TTS
 tts("Hello, world!", voice = "nova", file = "hello.mp3", backend = "openai")

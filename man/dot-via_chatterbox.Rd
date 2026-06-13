@@ -4,7 +4,8 @@
 \title{Internal: Generate speech via native chatterbox package}
 \usage{
 .via_chatterbox(input, voice, file = NULL, exaggeration = NULL,
-                cfg_weight = NULL, temperature = NULL, device = "cuda")
+                cfg_weight = NULL, temperature = NULL, device = "cuda",
+                turbo = FALSE)
 }
 \arguments{
 \item{input}{Character. Text to convert to speech.}
@@ -20,6 +21,8 @@
 \item{temperature}{Numeric or NULL. Sampling temperature.}
 
 \item{device}{Character. Device to use ("cuda", "cpu").}
+
+\item{turbo}{Logical. Use the Chatterbox Turbo model.}
 }
 \value{
 If file is NULL, returns list with audio and sample_rate.
