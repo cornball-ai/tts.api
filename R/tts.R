@@ -15,11 +15,11 @@
 #' @param backend Character. The TTS engine: "chatterbox", "qwen3", "openai",
 #'   "elevenlabs", or "auto" (defaults to "chatterbox"). This selects *what*
 #'   synthesizes; see \code{source} for *where* it runs.
-#' @param source Character. Where the engine runs: "package" for the in-process
-#'   R chatterbox package, "api" for an HTTP service (container or hosted), or
-#'   "auto" (default) which uses the package for chatterbox when it is installed,
-#'   and the API otherwise. Only "chatterbox" has a package source; the other
-#'   engines are API-only.
+#' @param source Character. Where the engine runs: "api" (default) for an HTTP
+#'   service (container or hosted package server), "package" for the in-process
+#'   R chatterbox package, or "auto" which uses the package for chatterbox when
+#'   it is installed and the API otherwise. Only "chatterbox" has a package
+#'   source; the other engines are API-only.
 #' @param model Character or NULL. The sub-model to use.
 #'   For Chatterbox package source: "turbo" loads Chatterbox Turbo.
 #'   For OpenAI: "tts-1" or "tts-1-hd".
@@ -68,7 +68,7 @@
 #' }
 tts <- function (input, voice, file = NULL,
                     backend = c("auto", "chatterbox", "qwen3", "openai", "elevenlabs"),
-                    source = c("auto", "api", "package"),
+                    source = c("api", "auto", "package"),
                     model = NULL, temperature = NULL, speed = NULL,
                     exaggeration = NULL, cfg_weight = NULL, stability = NULL,
                     similarity_boost = NULL, seed = NULL,

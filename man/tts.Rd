@@ -5,7 +5,7 @@
 \usage{
 tts(input, voice, file = NULL,
     backend = c("auto", "chatterbox", "qwen3", "openai", "elevenlabs"),
-    source = c("auto", "api", "package"), model = NULL, temperature = NULL,
+    source = c("api", "auto", "package"), model = NULL, temperature = NULL,
     speed = NULL, exaggeration = NULL, cfg_weight = NULL, stability = NULL,
     similarity_boost = NULL, seed = NULL, response_format = NULL,
     instructions = NULL, language = NULL, device = "cuda")
@@ -27,11 +27,11 @@ For ElevenLabs: voice ID (e.g., "XpDLYThV0yUAFjVTok7m").}
 "elevenlabs", or "auto" (defaults to "chatterbox"). This selects *what*
 synthesizes; see \code{source} for *where* it runs.}
 
-\item{source}{Character. Where the engine runs: "package" for the in-process
-R chatterbox package, "api" for an HTTP service (container or hosted), or
-"auto" (default) which uses the package for chatterbox when it is installed,
-and the API otherwise. Only "chatterbox" has a package source; the other
-engines are API-only.}
+\item{source}{Character. Where the engine runs: "api" (default) for an HTTP
+service (container or hosted package server), "package" for the in-process
+R chatterbox package, or "auto" which uses the package for chatterbox when
+it is installed and the API otherwise. Only "chatterbox" has a package
+source; the other engines are API-only.}
 
 \item{model}{Character or NULL. The sub-model to use.
 For Chatterbox package source: "turbo" loads Chatterbox Turbo.
