@@ -8,3 +8,8 @@
 ^NOTES\.md$
 ^man-md$
 ^\.github$
+^stashed$
+^.*\.tar\.gz$
+^\.Rhistory$
+^cran-comments\.md$
+^\.gitignore$

@@ -231,6 +231,7 @@ tts <- function (input, voice, file = NULL,
 }
 
 #' Apply speed adjustment using ffmpeg
+#' @return Invisibly returns NULL; writes \code{output_file} as a side effect.
 #' @keywords internal
 .apply_speed_ffmpeg <- function (input_file, output_file, speed) {
     # atempo filter only accepts 0.5-2.0, so we chain for extreme values
@@ -272,6 +273,8 @@ tts <- function (input, voice, file = NULL,
 }
 
 #' ElevenLabs TTS backend
+#' @return If \code{file} is provided, invisibly returns the file path;
+#'   otherwise returns raw audio bytes.
 #' @keywords internal
 .tts_elevenlabs <- function (input, voice_id, file = NULL, model = NULL,
                              stability = NULL, similarity_boost = NULL) {

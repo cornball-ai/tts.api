@@ -10,6 +10,8 @@
 #'   \item{base_url}{Default API base URL, or NULL}
 #' }
 #'
+#' @return A named list of provider configurations, each with \code{voices},
+#'   \code{env_var}, and \code{base_url} elements.
 #' @export
 #' @examples
 #' names(tts_providers)
@@ -124,6 +126,7 @@ tts_voices <- function (provider, base_url = NULL, timeout = 2) {
 }
 
 #' Fetch voices from API
+#' @return Character vector of voice names, or NULL if unavailable.
 #' @keywords internal
 .fetch_voices_from_api <- function(base_url, timeout = 2) {
     # Try /v1/audio/voices first (OpenAI-compatible), then /voices

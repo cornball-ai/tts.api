@@ -7,13 +7,8 @@
 #' @return Invisibly returns the previous value.
 #' @export
 #' @examples
-#' \dontrun{
-#' # For local Chatterbox server
 #' set_tts_base("http://localhost:7810")
-#'
-#' # For OpenAI
-#' set_tts_base("https://api.openai.com")
-#' }
+#' getOption("tts.api_base")
 set_tts_base <- function (url) {
     if (!is.character(url) || length(url) != 1 || nchar(url) == 0) {
         stop("'url' must be a non-empty character string", call. = FALSE)

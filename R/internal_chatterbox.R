@@ -44,7 +44,12 @@
 #' Removes cached native chatterbox models from memory. Call this to free GPU/RAM
 #' after batch processing is complete.
 #'
+#' @return Invisibly returns NULL, called for its side effect.
 #' @export
+#' @examples
+#' \dontrun{
+#' clear_native_chatterbox_cache()
+#' }
 clear_native_chatterbox_cache <- function () {
     models <- ls(.native_chatterbox_cache)
     if (length(models) > 0) {

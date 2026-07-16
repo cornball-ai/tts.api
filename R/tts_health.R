@@ -102,6 +102,7 @@ tts_health <- function() {
 }
 
 #' Try a single health endpoint
+#' @return List with elements \code{ok}, \code{status}, and \code{raw}.
 #' @keywords internal
 .try_health_endpoint <- function(
     base,
