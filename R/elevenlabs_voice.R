@@ -29,12 +29,13 @@
 #'   remove_background_noise = TRUE
 #' )
 #' }
-elevenlabs_voice_upload <- function (files, name, description = NULL,
-                                     remove_background_noise = FALSE,
-                                     labels = NULL) {
+elevenlabs_voice_upload <- function(files, name, description = NULL,
+                                    remove_background_noise = FALSE,
+                                    labels = NULL) {
     # Validate inputs
     if (!is.character(files) || length(files) == 0) {
-        stop("'files' must be a non-empty character vector of file paths", call. = FALSE)
+        stop("'files' must be a non-empty character vector of file paths",
+             call. = FALSE)
     }
     if (length(files) > 25) {
         stop("Maximum 25 files allowed", call. = FALSE)
@@ -76,10 +77,7 @@ elevenlabs_voice_upload <- function (files, name, description = NULL,
     response <- .elevenlabs_request("voices/add", handle = h)
     result <- jsonlite::fromJSON(rawToChar(response$content))
 
-    list(
-        voice_id = result$voice_id,
-        name = name
-    )
+    list(voice_id = result$voice_id, name = name)
 }
 
 #' List ElevenLabs Voices
@@ -94,24 +92,20 @@ elevenlabs_voice_upload <- function (files, name, description = NULL,
 #' voices <- elevenlabs_voices()
 #' print(voices)
 #' }
-elevenlabs_voices <- function () {
+elevenlabs_voices <- function() {
     response <- .elevenlabs_request("voices")
     result <- jsonlite::fromJSON(rawToChar(response$content))
 
     if (length(result$voices) == 0) {
-        return(data.frame(
-                voice_id = character(),
-                name = character(),
-                category = character(),
-                stringsAsFactors = FALSE
-            ))
+        return(data.frame(voice_id = character(), name = character(),
+                          category = character(), stringsAsFactors = FALSE))
     }
 
     data.frame(
-        voice_id = result$voices$voice_id,
-        name = result$voices$name,
-        category = result$voices$category,
-        stringsAsFactors = FALSE
+               voice_id = result$voices$voice_id,
+               name = result$voices$name,
+               category = result$voices$category,
+               stringsAsFactors = FALSE
     )
 }
 
@@ -128,12 +122,12 @@ elevenlabs_voices <- function () {
 #' \dontrun{
 #' elevenlabs_voice_delete("abc123")
 #' }
-elevenlabs_voice_delete <- function (voice_id) {
-    if (!is.character(voice_id) || length(voice_id) != 1 || nchar(voice_id) == 0) {
+elevenlabs_voice_delete <- function(voice_id) {
+    if (!is.character(voice_id) || length(voice_id) != 1 ||
+        nchar(voice_id) == 0) {
         stop("'voice_id' must be a non-empty character string", call. = FALSE)
     }
 
     .elevenlabs_request(paste0("voices/", voice_id), method = "DELETE")
     invisible(TRUE)
 }
-

@@ -91,9 +91,11 @@ voice_ensure <- function(voice_name, voices_dir = NULL) {
 
     if (!is.null(server_voices)) {
         # Normalize to character vector of names
-        v_names <- if (is.data.frame(server_voices) && "name" %in% names(server_voices)) {
+        v_names <- if (is.data.frame(server_voices) &&
+            "name" %in% names(server_voices)) {
             server_voices$name
-        } else if (is.data.frame(server_voices) && "id" %in% names(server_voices)) {
+        } else if (is.data.frame(server_voices) &&
+            "id" %in% names(server_voices)) {
             server_voices$id
         } else if (is.character(server_voices)) {
             server_voices

@@ -37,8 +37,8 @@
 #'   file = "playful.wav"
 #' )
 #' }
-speech_design <- function (input, voice_description, file = NULL,
-                           language = "English") {
+speech_design <- function(input, voice_description, file = NULL,
+                          language = "English") {
     .sidecar_arm(environment(), "file")
 
     # Validate required parameters
@@ -47,14 +47,15 @@ speech_design <- function (input, voice_description, file = NULL,
     }
     if (!is.character(voice_description) || length(voice_description) != 1 ||
         nchar(voice_description) == 0) {
-        stop("'voice_description' must be a non-empty character string", call. = FALSE)
+        stop("'voice_description' must be a non-empty character string",
+             call. = FALSE)
     }
 
     # Build request body
     body <- list(
-        input = input,
-        voice_description = voice_description,
-        language = language
+                 input = input,
+                 voice_description = voice_description,
+                 language = language
     )
 
     # Make request
@@ -66,11 +67,10 @@ speech_design <- function (input, voice_description, file = NULL,
     }
 
     tryCatch({
-            writeBin(audio_data, file)
-        }, error = function (e) {
-            stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
-        })
+        writeBin(audio_data, file)
+    }, error = function(e) {
+        stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
+    })
 
     invisible(file)
 }
-

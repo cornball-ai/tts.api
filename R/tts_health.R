@@ -13,18 +13,18 @@
 #'     tts("Hello", voice = "default", backend = "chatterbox")
 #'   }
 #' }
-chatterbox_available <- function (port = NULL, timeout = 2) {
+chatterbox_available <- function(port = NULL, timeout = 2) {
     if (is.null(port)) {
         port <- Sys.getenv("CHATTERBOX_PORT", "7810")
     }
     url <- paste0("http://localhost:", port, "/health")
 
     tryCatch({
-            h <- curl::new_handle()
-            curl::handle_setopt(h, timeout = timeout)
-            res <- curl::curl_fetch_memory(url, handle = h)
-            res$status_code == 200
-        }, error = function (e) FALSE)
+        h <- curl::new_handle()
+        curl::handle_setopt(h, timeout = timeout)
+        res <- curl::curl_fetch_memory(url, handle = h)
+        res$status_code == 200
+    }, error = function(e) FALSE)
 }
 
 #' Check if Qwen3-TTS Service is Available
@@ -42,8 +42,7 @@ chatterbox_available <- function (port = NULL, timeout = 2) {
 #'     tts("Hello", voice = "Vivian", backend = "qwen3")
 #'   }
 #' }
-qwen3_available <- function(port = NULL, timeout = 2)
-{
+qwen3_available <- function(port = NULL, timeout = 2) {
     if (is.null(port)) {
         port <- Sys.getenv("QWEN3_TTS_PORT", "7811")
     }
@@ -51,12 +50,12 @@ qwen3_available <- function(port = NULL, timeout = 2)
     url <- paste0("http://localhost:", port, "/v1/audio/speech/design")
 
     tryCatch({
-            h <- curl::new_handle()
-            curl::handle_setopt(h, timeout = timeout, customrequest = "OPTIONS")
-            res <- curl::curl_fetch_memory(url, handle = h)
-            # 200 or 405 (Method Not Allowed) means endpoint exists
-            res$status_code < 500
-        }, error = function(e) FALSE)
+        h <- curl::new_handle()
+        curl::handle_setopt(h, timeout = timeout, customrequest = "OPTIONS")
+        res <- curl::curl_fetch_memory(url, handle = h)
+        # 200 or 405 (Method Not Allowed) means endpoint exists
+        res$status_code < 500
+    }, error = function(e) FALSE)
 }
 
 #' Check TTS API Health
@@ -94,57 +93,46 @@ tts_health <- function() {
     }
 
     # All endpoints failed
-    list(
-        ok = FALSE,
-        status = "Server unreachable at all health endpoints",
-        raw = NULL
-    )
+    list(ok = FALSE, status = "Server unreachable at all health endpoints",
+         raw = NULL)
 }
 
 #' Try a single health endpoint
+#' @param base Character. API base URL.
+#' @param endpoint Character. Health endpoint path to probe.
+#' @param timeout Numeric. Request timeout in seconds.
 #' @return List with elements \code{ok}, \code{status}, and \code{raw}.
 #' @keywords internal
-.try_health_endpoint <- function(
-    base,
-    endpoint,
-    timeout
-) {
+.try_health_endpoint <- function(base, endpoint, timeout) {
     url <- paste0(base, endpoint)
     h <- curl::new_handle()
     curl::handle_setopt(h, timeout = timeout)
 
     response <- tryCatch(
-        curl::curl_fetch_memory(url, handle = h),
-        error = function(e) {
-            list(status_code = 0, content = raw(), error = e$message)
-        }
+                         curl::curl_fetch_memory(url, handle = h),
+                         error = function(e) {
+        list(status_code = 0, content = raw(), error = e$message)
+    }
     )
 
     if (!is.null(response$error)) {
-        return(list(
-                ok = FALSE,
-                status = paste("Connection failed:", response$error),
-                raw = NULL
-            ))
+        return(list(ok = FALSE,
+                    status = paste("Connection failed:", response$error),
+                    raw = NULL))
     }
 
     status <- response$status_code
     if (status >= 200 && status < 400) {
         raw_content <- tryCatch(
-            jsonlite::fromJSON(rawToChar(response$content)),
-            error = function(e) rawToChar(response$content)
+                                jsonlite::fromJSON(rawToChar(response$content)),
+                                error = function(e) rawToChar(response$content)
         )
         return(list(
-                ok = TRUE,
-                status = paste("OK (", endpoint, ")", sep = ""),
-                raw = raw_content
+                    ok = TRUE,
+                    status = paste("OK (", endpoint, ")", sep = ""),
+                    raw = raw_content
             ))
     }
 
-    list(
-        ok = FALSE,
-        status = paste("HTTP", status, "at", endpoint),
-        raw = NULL
-    )
+    list(ok = FALSE, status = paste("HTTP", status, "at", endpoint), raw = NULL)
 }
-

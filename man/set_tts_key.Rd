@@ -16,7 +16,6 @@ Sets the API key for authentication. Required for cloud services like OpenAI,
 typically ignored by local servers.
 }
 \examples{
-\dontrun{
-set_tts_key(Sys.getenv("OPENAI_API_KEY"))
-}
+set_tts_key("sk-example-key")
+getOption("tts.api_key")
 }

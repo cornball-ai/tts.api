@@ -9,7 +9,7 @@
 #' @examples
 #' set_tts_base("http://localhost:7810")
 #' getOption("tts.api_base")
-set_tts_base <- function (url) {
+set_tts_base <- function(url) {
     if (!is.character(url) || length(url) != 1 || nchar(url) == 0) {
         stop("'url' must be a non-empty character string", call. = FALSE)
     }
@@ -25,15 +25,11 @@ set_tts_base <- function (url) {
 #'
 #' @return Character string with the API base URL.
 #' @keywords internal
-.tts_get_api_base <- function () {
+.tts_get_api_base <- function() {
     base <- getOption("tts.api_base")
     if (is.null(base) || nchar(base) == 0) {
-        stop(
-            "API base URL not set. Use set_tts_base() to configure it.\n",
-            "Example: set_tts_base(\"http://localhost:7810\")",
-            call. = FALSE
-        )
+        stop("API base URL not set. Use set_tts_base() to configure it.\n",
+             "Example: set_tts_base(\"http://localhost:7810\")", call. = FALSE)
     }
     base
 }
-

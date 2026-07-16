@@ -13,12 +13,9 @@
 #' v <- voices()
 #' print(v)
 #' }
-voices <- function () {
+voices <- function() {
     # Try standard OpenAI-compatible endpoint first
-    result <- tryCatch(
-        .tts_get("/v1/audio/voices"),
-        error = function (e) NULL
-    )
+    result <- tryCatch(.tts_get("/v1/audio/voices"), error = function(e) NULL)
 
     if (!is.null(result)) {
         # Handle different response formats
@@ -35,10 +32,7 @@ voices <- function () {
     }
 
     # Try alternative /voices endpoint
-    result <- tryCatch(
-        .tts_get("/voices"),
-        error = function(e) NULL
-    )
+    result <- tryCatch(.tts_get("/voices"), error = function(e) NULL)
 
     if (!is.null(result)) {
         return(result)
@@ -46,8 +40,7 @@ voices <- function () {
 
     # No voice listing available
     message("Voice listing not available from this server.\n",
-        "The server may not support voice enumeration.\n",
-        "Check your server's documentation for available voices.")
+            "The server may not support voice enumeration.\n",
+            "Check your server's documentation for available voices.")
     invisible(NULL)
 }
-

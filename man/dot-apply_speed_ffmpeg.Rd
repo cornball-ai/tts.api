@@ -5,6 +5,16 @@
 \usage{
 .apply_speed_ffmpeg(input_file, output_file, speed)
 }
+\arguments{
+\item{input_file}{Character. Source audio file path.}
+
+\item{output_file}{Character. Destination audio file path.}
+
+\item{speed}{Numeric. Speed multiplier.}
+}
+\value{
+Invisibly returns NULL; writes \code{output_file} as a side effect.
+}
 \description{
 Apply speed adjustment using ffmpeg
 }

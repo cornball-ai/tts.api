@@ -4,7 +4,7 @@
 .native_chatterbox_cache <- new.env(parent = emptyenv())
 
 # Check if native chatterbox package is available
-.has_chatterbox <- function () {
+.has_chatterbox <- function() {
     requireNamespace("chatterbox", quietly = TRUE)
 }
 
@@ -14,7 +14,7 @@
 #'   model. Base and turbo are cached independently.
 #' @return Loaded chatterbox model object
 #' @keywords internal
-.get_native_chatterbox_model <- function (device = "cuda", turbo = FALSE) {
+.get_native_chatterbox_model <- function(device = "cuda", turbo = FALSE) {
     cache_key <- paste("chatterbox", if (turbo) "turbo" else "base", device,
                        sep = "_")
     if (is.null(.native_chatterbox_cache[[cache_key]])) {
@@ -27,12 +27,12 @@
             } else {
                 chatterbox::load_chatterbox(model)
             },
-            error = function (e) {
-                stop(
-                    "Failed to load chatterbox model: ", conditionMessage(e),
-                    call. = FALSE
-                )
-            }
+            error = function(e) {
+            stop(
+                 "Failed to load chatterbox model: ", conditionMessage(e),
+                 call. = FALSE
+            )
+        }
         )
         message("Native chatterbox model loaded and cached.")
     }
@@ -50,7 +50,7 @@
 #' \dontrun{
 #' clear_native_chatterbox_cache()
 #' }
-clear_native_chatterbox_cache <- function () {
+clear_native_chatterbox_cache <- function() {
     models <- ls(.native_chatterbox_cache)
     if (length(models) > 0) {
         rm(list = models, envir = .native_chatterbox_cache)
@@ -58,7 +58,8 @@ clear_native_chatterbox_cache <- function () {
         if (requireNamespace("torch", quietly = TRUE)) {
             torch::cuda_empty_cache()
         }
-        message("Cleared ", length(models), " cached native chatterbox model(s).")
+        message("Cleared ", length(models),
+                " cached native chatterbox model(s).")
     } else {
         message("Native chatterbox cache is empty.")
     }
@@ -80,15 +81,13 @@ clear_native_chatterbox_cache <- function () {
 #' @return If file is NULL, returns list with audio and sample_rate.
 #'   If file is provided, writes to file and returns file path invisibly.
 #' @keywords internal
-.via_chatterbox <- function (input, voice, file = NULL, exaggeration = NULL,
-                             cfg_weight = NULL, temperature = NULL,
-                             device = "cuda", turbo = FALSE) {
+.via_chatterbox <- function(input, voice, file = NULL, exaggeration = NULL,
+                            cfg_weight = NULL, temperature = NULL,
+                            device = "cuda", turbo = FALSE) {
     if (!.has_chatterbox()) {
-        stop(
-            "chatterbox package is not installed.\n",
-            "Install with: remotes::install_github('cornball-ai/chatterbox')",
-            call. = FALSE
-        )
+        stop("chatterbox package is not installed.\n",
+             "Install with: remotes::install_github('cornball-ai/chatterbox')",
+             call. = FALSE)
     }
 
     # Resolve voice: accept either a path to a reference file or a voice-library
@@ -96,13 +95,13 @@ clear_native_chatterbox_cache <- function () {
     # call-compatible with the HTTP backends, which resolve names server-side.
     if (!file.exists(voice)) {
         voice <- tryCatch(
-            voice_file(voice),
-            error = function (e) {
-                stop(
-                    "Voice reference not found as a file path or library name: ",
-                    voice, call. = FALSE
-                )
-            }
+                          voice_file(voice),
+                          error = function(e) {
+            stop(
+                 "Voice reference not found as a file path or library name: ",
+                 voice, call. = FALSE
+            )
+        }
         )
     }
 
@@ -117,7 +116,7 @@ clear_native_chatterbox_cache <- function () {
     # Generate speech. traced = TRUE gives ~5x faster inference on the base
     # model; turbo runs its own inference path, so leave it untraced.
     result <- tryCatch(
-        chatterbox::generate(
+                       chatterbox::generate(
             model = model,
             text = input,
             voice = voice,
@@ -126,12 +125,9 @@ clear_native_chatterbox_cache <- function () {
             temperature = temperature,
             traced = !turbo
         ),
-        error = function (e) {
-            stop(
-                "TTS generation failed: ", conditionMessage(e),
-                call. = FALSE
-            )
-        }
+                       error = function(e) {
+        stop("TTS generation failed: ", conditionMessage(e), call. = FALSE)
+    }
     )
 
     # Return raw audio or write to file
@@ -150,9 +146,9 @@ clear_native_chatterbox_cache <- function () {
         on.exit(unlink(tmp_wav), add = TRUE)
         chatterbox::write_audio(result$audio, result$sample_rate, tmp_wav)
         status <- system2(
-            "ffmpeg",
-            c("-y", "-i", shQuote(tmp_wav), shQuote(file)),
-            stdout = FALSE, stderr = FALSE
+                          "ffmpeg",
+                          c("-y", "-i", shQuote(tmp_wav), shQuote(file)),
+                          stdout = FALSE, stderr = FALSE
         )
         if (status != 0 || !file.exists(file)) {
             stop("ffmpeg transcode of native TTS output to '", ext,
@@ -163,5 +159,4 @@ clear_native_chatterbox_cache <- function () {
 }
 
 # Null coalescing operator if not available
-`%||%` <- function (x, y) if (is.null(x)) y else x
-
+`%||%` <- function(x, y) if (is.null(x)) y else x

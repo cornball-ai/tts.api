@@ -66,14 +66,13 @@
 #' tts("Hello, world!", voice = "XpDLYThV0yUAFjVTok7m",
 #'        file = "hello.mp3", backend = "elevenlabs")
 #' }
-tts <- function (input, voice, file = NULL,
-                    backend = c("auto", "chatterbox", "qwen3", "openai", "elevenlabs"),
-                    source = c("api", "auto", "package"),
-                    model = NULL, temperature = NULL, speed = NULL,
-                    exaggeration = NULL, cfg_weight = NULL, stability = NULL,
-                    similarity_boost = NULL, seed = NULL,
-                    response_format = NULL, instructions = NULL,
-                    language = NULL, device = "cuda") {
+tts <- function(input, voice, file = NULL,
+                backend = c("auto", "chatterbox", "qwen3", "openai", "elevenlabs"),
+                source = c("api", "auto", "package"), model = NULL,
+                temperature = NULL, speed = NULL, exaggeration = NULL,
+                cfg_weight = NULL, stability = NULL, similarity_boost = NULL,
+                seed = NULL, response_format = NULL, instructions = NULL,
+                language = NULL, device = "cuda") {
     .sidecar_arm(environment(), "file")
 
     # Deprecated: backend = "native" was the in-process chatterbox package,
@@ -82,7 +81,9 @@ tts <- function (input, voice, file = NULL,
         warning("backend = 'native' is deprecated; use ",
                 "backend = 'chatterbox', source = 'package'.", call. = FALSE)
         backend <- "chatterbox"
-        if (missing(source)) source <- "package"
+        if (missing(source)) {
+            source <- "package"
+        }
     }
     backend <- match.arg(backend)
     source <- match.arg(source)
@@ -119,26 +120,26 @@ tts <- function (input, voice, file = NULL,
     # Dispatch to the in-process chatterbox package
     if (source == "package") {
         return(.via_chatterbox(
-                input = input,
-                voice = voice,
-                file = file,
-                exaggeration = exaggeration,
-                cfg_weight = cfg_weight,
-                temperature = temperature,
-                device = device,
-                turbo = identical(model, "turbo")
+                               input = input,
+                               voice = voice,
+                               file = file,
+                               exaggeration = exaggeration,
+                               cfg_weight = cfg_weight,
+                               temperature = temperature,
+                               device = device,
+                               turbo = identical(model, "turbo")
             ))
     }
 
     # Dispatch to ElevenLabs (different API structure)
     if (backend == "elevenlabs") {
         return(.tts_elevenlabs(
-                input = input,
-                voice_id = voice,
-                file = file,
-                model = model,
-                stability = stability,
-                similarity_boost = similarity_boost
+                               input = input,
+                               voice_id = voice,
+                               file = file,
+                               model = model,
+                               stability = stability,
+                               similarity_boost = similarity_boost
             ))
     }
 
@@ -147,8 +148,8 @@ tts <- function (input, voice, file = NULL,
         old_base <- getOption("tts.api_base")
         old_key <- getOption("tts.api_key")
         on.exit({
-                options(tts.api_base = old_base, tts.api_key = old_key)
-            }, add = TRUE)
+            options(tts.api_base = old_base, tts.api_key = old_key)
+        }, add = TRUE)
 
         options(tts.api_base = "https://api.openai.com")
         if (is.null(old_key) || !grepl("^sk-", old_key %||% "")) {
@@ -164,17 +165,26 @@ tts <- function (input, voice, file = NULL,
     }
 
     # Build request body (OpenAI-compatible: Chatterbox, OpenAI)
-    body <- list(
-        input = input,
-        voice = voice
-    )
+    body <- list(input = input, voice = voice)
 
-    if (!is.null(model)) body$model <- model
-    if (!is.null(temperature)) body$temperature <- temperature
-    if (!is.null(speed)) body$speed <- speed
-    if (!is.null(exaggeration)) body$exaggeration <- exaggeration
-    if (!is.null(cfg_weight)) body$cfg_weight <- cfg_weight
-    if (!is.null(seed)) body$seed <- as.integer(seed)
+    if (!is.null(model)) {
+        body$model <- model
+    }
+    if (!is.null(temperature)) {
+        body$temperature <- temperature
+    }
+    if (!is.null(speed)) {
+        body$speed <- speed
+    }
+    if (!is.null(exaggeration)) {
+        body$exaggeration <- exaggeration
+    }
+    if (!is.null(cfg_weight)) {
+        body$cfg_weight <- cfg_weight
+    }
+    if (!is.null(seed)) {
+        body$seed <- as.integer(seed)
+    }
     if (!is.null(instructions)) {
         # qwen3 uses 'instruct', OpenAI uses 'instructions'
         if (backend == "qwen3") {
@@ -183,7 +193,9 @@ tts <- function (input, voice, file = NULL,
             body$instructions <- instructions
         }
     }
-    if (!is.null(language)) body$language <- language
+    if (!is.null(language)) {
+        body$language <- language
+    }
 
     # Handle response format
     if (!is.null(response_format)) {
@@ -204,36 +216,40 @@ tts <- function (input, voice, file = NULL,
     }
 
     # For Chatterbox with speed adjustment, use ffmpeg post-processing
-    needs_speed_adjust <- backend == "chatterbox" && !is.null(speed) && speed != 1.0
+    needs_speed_adjust <- backend == "chatterbox" && !is.null(speed) &&
+    speed != 1.0
 
     if (needs_speed_adjust) {
         # Write to temp file first
         temp_file <- tempfile(fileext = paste0(".", body$response_format %||% "wav"))
         on.exit(unlink(temp_file), add = TRUE)
         tryCatch({
-                writeBin(audio_data, temp_file)
-            }, error = function (e) {
-                stop("Failed to write temp audio: ", e$message, call. = FALSE)
-            })
+            writeBin(audio_data, temp_file)
+        }, error = function(e) {
+            stop("Failed to write temp audio: ", e$message, call. = FALSE)
+        })
 
         # Apply speed adjustment with ffmpeg atempo filter
         # atempo only accepts 0.5-2.0, so chain filters for extreme values
         .apply_speed_ffmpeg(temp_file, file, speed)
     } else {
         tryCatch({
-                writeBin(audio_data, file)
-            }, error = function (e) {
-                stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
-            })
+            writeBin(audio_data, file)
+        }, error = function(e) {
+            stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
+        })
     }
 
     invisible(file)
 }
 
 #' Apply speed adjustment using ffmpeg
+#' @param input_file Character. Source audio file path.
+#' @param output_file Character. Destination audio file path.
+#' @param speed Numeric. Speed multiplier.
 #' @return Invisibly returns NULL; writes \code{output_file} as a side effect.
 #' @keywords internal
-.apply_speed_ffmpeg <- function (input_file, output_file, speed) {
+.apply_speed_ffmpeg <- function(input_file, output_file, speed) {
     # atempo filter only accepts 0.5-2.0, so we chain for extreme values
     if (speed < 0.5) {
         # Chain multiple atempo filters for very slow speeds
@@ -261,10 +277,11 @@ tts <- function (input, voice, file = NULL,
 
     # Run ffmpeg
     result <- system2(
-        "ffmpeg",
-        c("-y", "-i", shQuote(input_file), "-filter:a", shQuote(filter), shQuote(output_file)),
-        stdout = FALSE,
-        stderr = FALSE
+                      "ffmpeg",
+                      c("-y", "-i", shQuote(input_file), "-filter:a", shQuote(filter),
+                        shQuote(output_file)),
+                      stdout = FALSE,
+                      stderr = FALSE
     )
 
     if (result != 0) {
@@ -273,54 +290,59 @@ tts <- function (input, voice, file = NULL,
 }
 
 #' ElevenLabs TTS backend
+#' @param input Character. Text to convert to speech.
+#' @param voice_id Character. ElevenLabs voice ID.
+#' @param file Character or NULL. Output file path.
+#' @param model Character or NULL. ElevenLabs model ID.
+#' @param stability Numeric or NULL. Voice stability (0-1).
+#' @param similarity_boost Numeric or NULL. Similarity boost (0-1).
 #' @return If \code{file} is provided, invisibly returns the file path;
 #'   otherwise returns raw audio bytes.
 #' @keywords internal
-.tts_elevenlabs <- function (input, voice_id, file = NULL, model = NULL,
-                             stability = NULL, similarity_boost = NULL) {
+.tts_elevenlabs <- function(input, voice_id, file = NULL, model = NULL,
+                            stability = NULL, similarity_boost = NULL) {
     api_key <- Sys.getenv("ELEVENLABS_API_KEY")
     if (api_key == "") {
         api_key <- getOption("tts.elevenlabs_key")
     }
     if (is.null(api_key) || api_key == "") {
-        stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_elevenlabs_key()", call. = FALSE)
+        stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_elevenlabs_key()",
+             call. = FALSE)
     }
 
     url <- paste0("https://api.elevenlabs.io/v1/text-to-speech/", voice_id)
 
     body <- list(
-        text = input,
-        model_id = model %||% "eleven_multilingual_v2",
-        voice_settings = list(
-            stability = stability %||% 0.5,
-            similarity_boost = similarity_boost %||% 0.75
-        )
+                 text = input,
+                 model_id = model %||% "eleven_multilingual_v2",
+                 voice_settings = list(stability = stability %||% 0.5,
+                                       similarity_boost = similarity_boost %||% 0.75)
     )
 
     h <- curl::new_handle()
     curl::handle_setheaders(h,
-        "xi-api-key" = api_key,
-        "Content-Type" = "application/json",
-        "Accept" = "audio/mpeg"
+                            "xi-api-key" = api_key,
+                            "Content-Type" = "application/json",
+                            "Accept" = "audio/mpeg"
     )
     curl::handle_setopt(h,
-        post = TRUE,
-        postfields = jsonlite::toJSON(body, auto_unbox = TRUE),
-        timeout = getOption("tts.timeout", 120)
+                        post = TRUE,
+                        postfields = jsonlite::toJSON(body, auto_unbox = TRUE),
+                        timeout = getOption("tts.timeout", 120)
     )
 
     response <- tryCatch(
-        curl::curl_fetch_memory(url, handle = h),
-        error = function (e) {
-            stop("ElevenLabs connection failed: ", e$message, call. = FALSE)
-        }
+                         curl::curl_fetch_memory(url, handle = h),
+                         error = function(e) {
+        stop("ElevenLabs connection failed: ", e$message, call. = FALSE)
+    }
     )
 
     if (response$status_code >= 400) {
         err_msg <- tryCatch({
-                err <- jsonlite::fromJSON(rawToChar(response$content))
-                err$detail$message %||% err$detail %||% rawToChar(response$content)
-            }, error = function (e) rawToChar(response$content))
+            err <- jsonlite::fromJSON(rawToChar(response$content))
+            err$detail$message %||% err$detail %||% rawToChar(response$content)
+        }, error = function(e) rawToChar(response$content))
         stop("ElevenLabs API error (", response$status_code, "): ", err_msg, call. = FALSE)
     }
 
@@ -331,12 +353,10 @@ tts <- function (input, voice, file = NULL,
     }
 
     tryCatch({
-            writeBin(audio_data, file)
-        }, error = function(e) {
-            stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
-        })
+        writeBin(audio_data, file)
+    }, error = function(e) {
+        stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
+    })
 
     invisible(file)
 }
-
-
