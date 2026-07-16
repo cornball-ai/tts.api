@@ -8,7 +8,7 @@ Authors@R: c(
     person("cornball.ai", role = "cph"))
 Description: A minimal-dependency R client for 'OpenAI'-compatible
     text-to-speech APIs (see
-    <https://platform.openai.com/docs/api-reference/audio>). Supports
+    <https://developers.openai.com/api/reference/resources/audio>). Supports
     'OpenAI', 'ElevenLabs', local servers ('Chatterbox', 'LM Studio',
     'OpenWebUI', 'AnythingLLM'), and the 'chatterbox' package for in-process
     synthesis. Provides a unified interface for speech synthesis, voice
