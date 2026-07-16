@@ -1,4 +1,4 @@
-# tts.api 0.2.0.2 (development)
+# tts.api 0.3.0
 
 * Add `source` argument to `tts()`: run chatterbox in-process via the R package (`source = "package"`) or over HTTP (`source = "api"`, the default), with `"auto"` picking the package when installed
 * Call-record sidecars for `tts()`, `speech_clone()`, and `speech_design()`
