@@ -1,6 +1,6 @@
 Package: tts.api
 Title: OpenAI-Compatible Text-to-Speech API Client
-Version: 0.2.0.1
+Version: 0.2.0.2
 Authors@R:
     person("Troy", "Hernandez", role = c("aut", "cre"),
            email = "troy@cornball.ai")
