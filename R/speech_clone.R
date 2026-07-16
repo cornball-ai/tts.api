@@ -63,15 +63,7 @@ speech_clone <- function (input, voice_file, file = NULL,
     .sidecar_arm(environment(), "file")
     backend <- match.arg(backend)
 
-    # Auto-detect backend: qwen3 has /v1/audio/speech/design endpoint
-    if (backend == "auto") {
-        backend <- if (qwen3_available()) "qwen3" else "chatterbox"
-    }
-
-    # Acquire GPU for container backend
-    .gpuctl_acquire(backend)
-
-    # Validate required parameters
+    # Validate required parameters before any backend probing
     if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
         stop("'input' must be a non-empty character string", call. = FALSE)
     }
@@ -80,6 +72,11 @@ speech_clone <- function (input, voice_file, file = NULL,
     }
     if (!file.exists(voice_file)) {
         stop("Voice file not found: ", voice_file, call. = FALSE)
+    }
+
+    # Auto-detect backend: qwen3 has /v1/audio/speech/design endpoint
+    if (backend == "auto") {
+        backend <- if (qwen3_available()) "qwen3" else "chatterbox"
     }
 
     # Build URL

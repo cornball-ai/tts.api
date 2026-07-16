@@ -130,11 +130,6 @@ tts <- function (input, voice, file = NULL,
             ))
     }
 
-    # Auto-acquire GPU for container backends via gpu.ctl
-    if (backend %in% c("chatterbox", "qwen3")) {
-        .gpuctl_acquire(backend)
-    }
-
     # Dispatch to ElevenLabs (different API structure)
     if (backend == "elevenlabs") {
         return(.tts_elevenlabs(
