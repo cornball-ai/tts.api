@@ -16,13 +16,17 @@
 # name of the function's output-path argument ("output", "file", ...).
 .sidecar_arm <- function(env, output_arg = "output") {
     fn_call <- sys.call(-1)
-    fn <- if (is.null(fn_call)) "unknown" else deparse(fn_call[[1]])
+    if (is.null(fn_call)) {
+        fn <- "unknown"
+    } else {
+        fn <- deparse(fn_call[[1]])
+    }
     arg_names <- setdiff(names(formals(sys.function(-1))), "...")
     started <- Sys.time()
     # Splice the function OBJECT into the on.exit call: the hook then needs
     # no name lookup, so it works regardless of the caller's search path.
     expr <- bquote((.(.sidecar_finish))(.(fn), .(output_arg), .(env),
-                                        .(started), .(arg_names)))
+                   .(started), .(arg_names)))
     do.call(on.exit, list(expr, add = TRUE), envir = env)
 }
 
@@ -31,7 +35,7 @@
 .sidecar_finish <- function(fn, output_arg, env, started, arg_names) {
     out <- tryCatch(get(output_arg, envir = env), error = function(e) NULL)
     ok <- is.character(out) && length(out) == 1 && !is.na(out) &&
-        file.exists(out) && file.mtime(out) >= started - 1
+    file.exists(out) && file.mtime(out) >= started - 1
     if (!ok) {
         return(invisible(NULL))
     }
@@ -53,7 +57,7 @@
         },
                 created = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
     rec <- rec[!vapply(rec, is.null, logical(1))]
-    try(jsonlite::write_json(rec, paste0(output, ".json"),
-                             auto_unbox = TRUE, pretty = TRUE), silent = TRUE)
+    try(jsonlite::write_json(rec, paste0(output, ".json"), auto_unbox = TRUE,
+                             pretty = TRUE), silent = TRUE)
     invisible(paste0(output, ".json"))
 }

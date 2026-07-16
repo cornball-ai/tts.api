@@ -1,21 +1,28 @@
 Package: tts.api
-Title: OpenAI-Compatible Text-to-Speech API Client
-Version: 0.2.0.2
-Authors@R:
+Title: 'OpenAI'-Compatible Text-to-Speech API Client
+Version: 0.3.0
+Authors@R: c(
     person("Troy", "Hernandez", role = c("aut", "cre"),
-           email = "troy@cornball.ai")
-Description: An R client for Text-to-Speech APIs supporting multiple backends:
-    OpenAI-compatible APIs (OpenAI, Chatterbox, LM Studio, OpenWebUI, AnythingLLM)
-    and ElevenLabs. Provides a unified interface for speech synthesis with
-    backend-specific parameters.
+           email = "troy@cornball.ai",
+           comment = c(ORCID = "0009-0005-4248-604X")),
+    person("cornball.ai", role = "cph"))
+Description: A minimal-dependency R client for 'OpenAI'-compatible
+    text-to-speech APIs (see
+    <https://platform.openai.com/docs/api-reference/audio>). Supports
+    'OpenAI', 'ElevenLabs', local servers ('Chatterbox', 'LM Studio',
+    'OpenWebUI', 'AnythingLLM'), and the 'chatterbox' package for in-process
+    synthesis. Provides a unified interface for speech synthesis, voice
+    cloning, and voice design with backend-specific parameters.
 License: MIT + file LICENSE
 Encoding: UTF-8
 URL: https://github.com/cornball-ai/tts.api
 BugReports: https://github.com/cornball-ai/tts.api/issues
 Imports:
     curl,
-    jsonlite
+    jsonlite,
+    tools,
+    utils
 Suggests:
     chatterbox,
-    processx,
-    tinytest
+    tinytest,
+    torch

@@ -5,7 +5,15 @@
 \usage{
 clear_native_chatterbox_cache()
 }
+\value{
+Invisibly returns NULL, called for its side effect.
+}
 \description{
 Removes cached native chatterbox models from memory. Call this to free GPU/RAM
 after batch processing is complete.
+}
+\examples{
+\dontrun{
+clear_native_chatterbox_cache()
+}
 }

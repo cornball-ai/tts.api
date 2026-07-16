@@ -8,8 +8,8 @@
 #' @param expect_binary Logical. If TRUE, expect binary response (audio data).
 #' @return Response content (raw bytes if binary, parsed JSON otherwise).
 #' @keywords internal
-.tts_request <- function (endpoint, method = "GET", body = NULL,
-                          expect_binary = FALSE) {
+.tts_request <- function(endpoint, method = "GET", body = NULL,
+                         expect_binary = FALSE) {
     base <- .tts_get_api_base()
     url <- paste0(base, endpoint)
 
@@ -33,10 +33,10 @@
 
     # Make request
     response <- tryCatch(
-        curl::curl_fetch_memory(url, handle = h),
-        error = function (e) {
-            stop("Connection failed: ", e$message, call. = FALSE)
-        }
+                         curl::curl_fetch_memory(url, handle = h),
+                         error = function(e) {
+        stop("Connection failed: ", e$message, call. = FALSE)
+    }
     )
 
     # Check HTTP status
@@ -44,19 +44,19 @@
     if (status >= 400) {
         # Try to parse error message from JSON response
         err_msg <- tryCatch({
-                err <- jsonlite::fromJSON(rawToChar(response$content))
-                if (!is.null(err$error$message)) {
-                    err$error$message
-                } else if (!is.null(err$error)) {
-                    as.character(err$error)
-                } else if (!is.null(err$detail)) {
-                    as.character(err$detail)
-                } else {
-                    rawToChar(response$content)
-                }
-            }, error = function (e) {
+            err <- jsonlite::fromJSON(rawToChar(response$content))
+            if (!is.null(err$error$message)) {
+                err$error$message
+            } else if (!is.null(err$error)) {
+                as.character(err$error)
+            } else if (!is.null(err$detail)) {
+                as.character(err$detail)
+            } else {
                 rawToChar(response$content)
-            })
+            }
+        }, error = function(e) {
+            rawToChar(response$content)
+        })
         stop("API error (", status, "): ", err_msg, call. = FALSE)
     }
 
@@ -64,10 +64,8 @@
     if (expect_binary) {
         response$content
     } else {
-        tryCatch(
-            jsonlite::fromJSON(rawToChar(response$content)),
-            error = function (e) rawToChar(response$content)
-        )
+        tryCatch(jsonlite::fromJSON(rawToChar(response$content)),
+                 error = function(e) rawToChar(response$content))
     }
 }
 
@@ -78,13 +76,9 @@
 #' @param expect_binary Logical. If TRUE, expect binary response.
 #' @return Response content.
 #' @keywords internal
-.tts_post_json <- function(
-    endpoint,
-    body,
-    expect_binary = FALSE
-) {
+.tts_post_json <- function(endpoint, body, expect_binary = FALSE) {
     .tts_request(endpoint, method = "POST", body = body,
-        expect_binary = expect_binary)
+                 expect_binary = expect_binary)
 }
 
 #' GET from the TTS API
@@ -106,7 +100,8 @@
         api_key <- getOption("tts.elevenlabs_key")
     }
     if (is.null(api_key) || api_key == "") {
-        stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_elevenlabs_key()", call. = FALSE)
+        stop("ElevenLabs API key not set. Set ELEVENLABS_API_KEY env var or use set_elevenlabs_key()",
+             call. = FALSE)
     }
     api_key
 }
@@ -118,11 +113,7 @@
 #' @param handle curl handle or NULL. Pre-configured handle for multipart forms.
 #' @return curl response object.
 #' @keywords internal
-.elevenlabs_request <- function(
-    endpoint,
-    method = "GET",
-    handle = NULL
-) {
+.elevenlabs_request <- function(endpoint, method = "GET", handle = NULL) {
     url <- paste0("https://api.elevenlabs.io/v1/", endpoint)
 
     if (is.null(handle)) {
@@ -136,20 +127,20 @@
     }
 
     response <- tryCatch(
-        curl::curl_fetch_memory(url, handle = handle),
-        error = function(e) {
-            stop("ElevenLabs connection failed: ", e$message, call. = FALSE)
-        }
+                         curl::curl_fetch_memory(url, handle = handle),
+                         error = function(e) {
+        stop("ElevenLabs connection failed: ", e$message, call. = FALSE)
+    }
     )
 
     if (response$status_code >= 400) {
         err_msg <- tryCatch({
-                err <- jsonlite::fromJSON(rawToChar(response$content))
-                err$detail$message %||% err$detail %||% rawToChar(response$content)
-            }, error = function(e) rawToChar(response$content))
-        stop("ElevenLabs API error (", response$status_code, "): ", err_msg, call. = FALSE)
+            err <- jsonlite::fromJSON(rawToChar(response$content))
+            err$detail$message %||% err$detail %||% rawToChar(response$content)
+        }, error = function(e) rawToChar(response$content))
+        stop("ElevenLabs API error (", response$status_code, "): ", err_msg,
+             call. = FALSE)
     }
 
     response
 }
-

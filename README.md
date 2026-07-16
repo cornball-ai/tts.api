@@ -237,7 +237,8 @@ speech_clone(
 | `input` | All | Text to convert to speech |
 | `voice` | All | Voice name or ID |
 | `file` | All | Output file path (NULL returns raw bytes) |
-| `backend` | - | "auto", "native", "chatterbox", "qwen3", "openai", "elevenlabs", or "fal" |
+| `backend` | - | "auto", "chatterbox", "qwen3", "openai", or "elevenlabs" |
+| `source` | - | "api" (HTTP server, default), "package" (in-process chatterbox R package), or "auto" |
 | `model` | OpenAI, ElevenLabs | Model name |
 | `instructions` | OpenAI | Voice style instructions |
 | `temperature` | Chatterbox | Sampling temperature |

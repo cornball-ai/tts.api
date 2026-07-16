@@ -34,7 +34,7 @@
 #'   file = "output.wav"
 #' )
 #' }
-voice_upload <- function (voice_file, voice_name, language = NULL) {
+voice_upload <- function(voice_file, voice_name, language = NULL) {
     # Validate parameters
     if (!is.character(voice_file) || length(voice_file) != 1) {
         stop("'voice_file' must be a character string", call. = FALSE)
@@ -42,7 +42,8 @@ voice_upload <- function (voice_file, voice_name, language = NULL) {
     if (!file.exists(voice_file)) {
         stop("Voice file not found: ", voice_file, call. = FALSE)
     }
-    if (!is.character(voice_name) || length(voice_name) != 1 || nchar(voice_name) == 0) {
+    if (!is.character(voice_name) || length(voice_name) != 1 ||
+        nchar(voice_name) == 0) {
         stop("'voice_name' must be a non-empty character string", call. = FALSE)
     }
 
@@ -62,10 +63,8 @@ voice_upload <- function (voice_file, voice_name, language = NULL) {
     }
 
     # Build multipart form
-    form_data <- list(
-        voice_file = curl::form_file(voice_file),
-        voice_name = voice_name
-    )
+    form_data <- list(voice_file = curl::form_file(voice_file),
+                      voice_name = voice_name)
 
     if (!is.null(language)) {
         form_data$language <- language
@@ -75,36 +74,36 @@ voice_upload <- function (voice_file, voice_name, language = NULL) {
 
     # Make request
     response <- tryCatch(
-        curl::curl_fetch_memory(url, handle = h),
-        error = function (e) {
-            stop("Connection failed: ", e$message, call. = FALSE)
-        }
+                         curl::curl_fetch_memory(url, handle = h),
+                         error = function(e) {
+        stop("Connection failed: ", e$message, call. = FALSE)
+    }
     )
 
     # Check HTTP status
     status <- response$status_code
     if (status >= 400) {
         err_msg <- tryCatch({
-                err <- jsonlite::fromJSON(rawToChar(response$content))
-                if (!is.null(err$error$message)) {
-                    err$error$message
-                } else if (!is.null(err$error)) {
-                    as.character(err$error)
-                } else if (!is.null(err$detail)) {
-                    as.character(err$detail)
-                } else {
-                    rawToChar(response$content)
-                }
-            }, error = function (e) {
+            err <- jsonlite::fromJSON(rawToChar(response$content))
+            if (!is.null(err$error$message)) {
+                err$error$message
+            } else if (!is.null(err$error)) {
+                as.character(err$error)
+            } else if (!is.null(err$detail)) {
+                as.character(err$detail)
+            } else {
                 rawToChar(response$content)
-            })
+            }
+        }, error = function(e) {
+            rawToChar(response$content)
+        })
         stop("API error (", status, "): ", err_msg, call. = FALSE)
     }
 
     # Parse response
     result <- tryCatch(
-        jsonlite::fromJSON(rawToChar(response$content)),
-        error = function (e) rawToChar(response$content)
+                       jsonlite::fromJSON(rawToChar(response$content)),
+                       error = function(e) rawToChar(response$content)
     )
 
     message("Voice '", voice_name, "' uploaded successfully")
@@ -133,12 +132,8 @@ voice_upload <- function (voice_file, voice_name, language = NULL) {
 #'     tts("Hello!", voice = "my-voice", backend = "chatterbox")
 #'   }
 #' }
-chatterbox_voice_upload <- function(
-    voice_file,
-    voice_name,
-    port = NULL,
-    timeout = 30
-) {
+chatterbox_voice_upload <- function(voice_file, voice_name, port = NULL,
+                                    timeout = 30) {
     # Validate parameters
     if (!is.character(voice_file) || length(voice_file) != 1) {
         return(FALSE)
@@ -146,7 +141,8 @@ chatterbox_voice_upload <- function(
     if (!file.exists(voice_file)) {
         return(FALSE)
     }
-    if (!is.character(voice_name) || length(voice_name) != 1 || nchar(voice_name) == 0) {
+    if (!is.character(voice_name) || length(voice_name) != 1 ||
+        nchar(voice_name) == 0) {
         return(FALSE)
     }
 
@@ -158,16 +154,13 @@ chatterbox_voice_upload <- function(
     url <- paste0("http://localhost:", port, "/voices")
 
     tryCatch({
-            h <- curl::new_handle()
-            curl::handle_setopt(h, timeout = timeout)
-            curl::handle_setform(h,
-                voice_name = voice_name,
-                voice_file = curl::form_file(voice_file)
-            )
+        h <- curl::new_handle()
+        curl::handle_setopt(h, timeout = timeout)
+        curl::handle_setform(h, voice_name = voice_name,
+                             voice_file = curl::form_file(voice_file))
 
-            res <- curl::curl_fetch_memory(url, handle = h)
-            res$status_code %in% c(200, 201)
+        res <- curl::curl_fetch_memory(url, handle = h)
+        res$status_code %in% c(200, 201)
 
-        }, error = function(e) FALSE)
+    }, error = function(e) FALSE)
 }
-

@@ -6,14 +6,16 @@
 set_elevenlabs_key(api_key)
 }
 \arguments{
-\item{api_key}{Character. Your ElevenLabs API key.}
+\item{api_key}{Character. Your ElevenLabs API key. Alternatively, set the
+ELEVENLABS_API_KEY environment variable.}
+}
+\value{
+Invisibly returns the API key.
 }
 \description{
 Configure the API key for ElevenLabs TTS backend.
 }
 \examples{
-\dontrun{
-set_elevenlabs_key("your-api-key-here")
-# Or use environment variable ELEVENLABS_API_KEY
-}
+set_elevenlabs_key("example-api-key")
+getOption("tts.elevenlabs_key")
 }

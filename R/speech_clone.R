@@ -54,24 +54,16 @@
 #'   backend = "chatterbox"
 #' )
 #' }
-speech_clone <- function (input, voice_file, file = NULL,
-                          backend = c("auto", "chatterbox", "qwen3"),
-                          ref_text = NULL, x_vector_only = FALSE,
-                          language = NULL, exaggeration = NULL,
-                          temperature = NULL, cfg_weight = NULL, speed = NULL,
-                          seed = NULL) {
+speech_clone <- function(input, voice_file, file = NULL,
+                         backend = c("auto", "chatterbox", "qwen3"),
+                         ref_text = NULL, x_vector_only = FALSE,
+                         language = NULL, exaggeration = NULL,
+                         temperature = NULL, cfg_weight = NULL, speed = NULL,
+                         seed = NULL) {
     .sidecar_arm(environment(), "file")
     backend <- match.arg(backend)
 
-    # Auto-detect backend: qwen3 has /v1/audio/speech/design endpoint
-    if (backend == "auto") {
-        backend <- if (qwen3_available()) "qwen3" else "chatterbox"
-    }
-
-    # Acquire GPU for container backend
-    .gpuctl_acquire(backend)
-
-    # Validate required parameters
+    # Validate required parameters before any backend probing
     if (!is.character(input) || length(input) != 1 || nchar(input) == 0) {
         stop("'input' must be a non-empty character string", call. = FALSE)
     }
@@ -80,6 +72,15 @@ speech_clone <- function (input, voice_file, file = NULL,
     }
     if (!file.exists(voice_file)) {
         stop("Voice file not found: ", voice_file, call. = FALSE)
+    }
+
+    # Auto-detect backend: qwen3 has /v1/audio/speech/design endpoint
+    if (backend == "auto") {
+        if (qwen3_available()) {
+            backend <- "qwen3"
+        } else {
+            backend <- "chatterbox"
+        }
     }
 
     # Build URL
@@ -98,50 +99,63 @@ speech_clone <- function (input, voice_file, file = NULL,
     }
 
     # Build multipart form
-    form_data <- list(
-        input = input,
-        voice_file = curl::form_file(voice_file)
-    )
+    form_data <- list(input = input, voice_file = curl::form_file(voice_file))
 
     # qwen3-tts specific parameters
-    if (!is.null(ref_text)) form_data$ref_text <- ref_text
-    if (isTRUE(x_vector_only)) form_data$x_vector_only <- "true"
-    if (!is.null(language)) form_data$language <- language
+    if (!is.null(ref_text)) {
+        form_data$ref_text <- ref_text
+    }
+    if (isTRUE(x_vector_only)) {
+        form_data$x_vector_only <- "true"
+    }
+    if (!is.null(language)) {
+        form_data$language <- language
+    }
 
     # Chatterbox-specific parameters
-    if (!is.null(exaggeration)) form_data$exaggeration <- as.character(exaggeration)
-    if (!is.null(temperature)) form_data$temperature <- as.character(temperature)
-    if (!is.null(cfg_weight)) form_data$cfg_weight <- as.character(cfg_weight)
-    if (!is.null(speed)) form_data$speed <- as.character(speed)
-    if (!is.null(seed)) form_data$seed <- as.character(as.integer(seed))
+    if (!is.null(exaggeration)) {
+        form_data$exaggeration <- as.character(exaggeration)
+    }
+    if (!is.null(temperature)) {
+        form_data$temperature <- as.character(temperature)
+    }
+    if (!is.null(cfg_weight)) {
+        form_data$cfg_weight <- as.character(cfg_weight)
+    }
+    if (!is.null(speed)) {
+        form_data$speed <- as.character(speed)
+    }
+    if (!is.null(seed)) {
+        form_data$seed <- as.character(as.integer(seed))
+    }
 
     curl::handle_setform(h, .list = form_data)
 
     # Make request
     response <- tryCatch(
-        curl::curl_fetch_memory(url, handle = h),
-        error = function (e) {
-            stop("Connection failed: ", e$message, call. = FALSE)
-        }
+                         curl::curl_fetch_memory(url, handle = h),
+                         error = function(e) {
+        stop("Connection failed: ", e$message, call. = FALSE)
+    }
     )
 
     # Check HTTP status
     status <- response$status_code
     if (status >= 400) {
         err_msg <- tryCatch({
-                err <- jsonlite::fromJSON(rawToChar(response$content))
-                if (!is.null(err$error$message)) {
-                    err$error$message
-                } else if (!is.null(err$error)) {
-                    as.character(err$error)
-                } else if (!is.null(err$detail)) {
-                    as.character(err$detail)
-                } else {
-                    rawToChar(response$content)
-                }
-            }, error = function (e) {
+            err <- jsonlite::fromJSON(rawToChar(response$content))
+            if (!is.null(err$error$message)) {
+                err$error$message
+            } else if (!is.null(err$error)) {
+                as.character(err$error)
+            } else if (!is.null(err$detail)) {
+                as.character(err$detail)
+            } else {
                 rawToChar(response$content)
-            })
+            }
+        }, error = function(e) {
+            rawToChar(response$content)
+        })
         stop("API error (", status, "): ", err_msg, call. = FALSE)
     }
 
@@ -154,11 +168,11 @@ speech_clone <- function (input, voice_file, file = NULL,
 
     # Write to file
     tryCatch({
-            writeBin(audio_data, file)
-        }, error = function (e) {
-            stop("Failed to write audio to '", file, "': ", e$message, call. = FALSE)
-        })
+        writeBin(audio_data, file)
+    }, error = function(e) {
+        stop("Failed to write audio to '", file, "': ", e$message,
+             call. = FALSE)
+    })
 
     invisible(file)
 }
-

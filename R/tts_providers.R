@@ -10,29 +10,32 @@
 #'   \item{base_url}{Default API base URL, or NULL}
 #' }
 #'
+#' @return A named list of provider configurations, each with \code{voices},
+#'   \code{env_var}, and \code{base_url} elements.
 #' @export
 #' @examples
 #' names(tts_providers)
 #' tts_providers[["OpenAI"]]$voices
 tts_providers <- list(
-    "OpenAI" = list(
-        voices = c("alloy", "ash", "coral", "echo", "fable", "onyx", "nova", "sage", "shimmer"),
-        env_var = "OPENAI_API_KEY",
-        base_url = "https://api.openai.com"
+                      "OpenAI" = list(
+                                      voices = c("alloy", "ash", "coral", "echo", "fable", "onyx",
+            "nova", "sage", "shimmer"),
+                                      env_var = "OPENAI_API_KEY",
+                                      base_url = "https://api.openai.com"
     ),
 
-    "Chatterbox (Local)" = list(
+                      "Chatterbox (Local)" = list(
         voices = NULL, # Fetched dynamically from container
         env_var = NULL,
         base_url = "http://localhost:7810"
     ),
-    "Qwen3-TTS (Local)" = list(
+                      "Qwen3-TTS (Local)" = list(
         voices = c("Vivian", "Serena", "Uncle_Fu", "Dylan", "Eric",
-            "Ryan", "Aiden", "Ono_Anna", "Sohee"),
+                   "Ryan", "Aiden", "Ono_Anna", "Sohee"),
         env_var = NULL,
         base_url = "http://localhost:7811"
     ),
-    "ElevenLabs" = list(
+                      "ElevenLabs" = list(
         voices = NULL, # Fetched dynamically from API
         env_var = "ELEVENLABS_API_KEY",
         base_url = "https://api.elevenlabs.io"
@@ -56,23 +59,23 @@ tts_providers <- list(
 #' tts_voices("OpenAI")
 #' tts_voices("Chatterbox (Local)")
 #' }
-tts_voices <- function (provider, base_url = NULL, timeout = 2) {
+tts_voices <- function(provider, base_url = NULL, timeout = 2) {
     # Get provider config
     config <- tts_providers[[provider]]
 
     # ElevenLabs has its own API that requires authentication
     if (provider == "ElevenLabs") {
         voices <- tryCatch({
-                v <- elevenlabs_voices()
-                if (nrow(v) > 0) {
-                    # Return named vector: names are display labels, values are voice_ids
-                    result <- v$voice_id
-                    names(result) <- v$name
-                    result
-                } else {
-                    NULL
-                }
-            }, error = function (e) NULL)
+            v <- elevenlabs_voices()
+            if (nrow(v) > 0) {
+                # Return named vector: names are display labels, values are voice_ids
+                result <- v$voice_id
+                names(result) <- v$name
+                result
+            } else {
+                NULL
+            }
+        }, error = function(e) NULL)
 
         if (!is.null(voices) && length(voices) > 0) {
             return(voices)
@@ -98,8 +101,8 @@ tts_voices <- function (provider, base_url = NULL, timeout = 2) {
     # Try to fetch voices dynamically
     if (!is.null(base_url)) {
         voices <- tryCatch({
-                .fetch_voices_from_api(base_url, timeout)
-            }, error = function(e) NULL)
+            .fetch_voices_from_api(base_url, timeout)
+        }, error = function(e) NULL)
 
         if (!is.null(voices) && length(voices) > 0) {
             return(voices)
@@ -124,40 +127,57 @@ tts_voices <- function (provider, base_url = NULL, timeout = 2) {
 }
 
 #' Fetch voices from API
+#' @param base_url Character. API base URL.
+#' @param timeout Numeric. Request timeout in seconds.
+#' @return Character vector of voice names, or NULL if unavailable.
 #' @keywords internal
 .fetch_voices_from_api <- function(base_url, timeout = 2) {
     # Try /v1/audio/voices first (OpenAI-compatible), then /voices
     for (path in c("/v1/audio/voices", "/voices")) {
         url <- paste0(base_url, path)
         res <- tryCatch(
-            curl::curl_fetch_memory(url, handle = curl::new_handle(timeout = timeout)),
-            error = function(e) NULL
+                        curl::curl_fetch_memory(url,
+                handle = curl::new_handle(timeout = timeout)),
+                        error = function(e) NULL
         )
-        if (is.null(res) || res$status_code != 200) next
+        if (is.null(res) || res$status_code != 200) {
+            next
+        }
 
         content <- jsonlite::fromJSON(rawToChar(res$content))
 
         # Plain character vector
-        if (is.character(content)) return(content)
+        if (is.character(content)) {
+            return(content)
+        }
 
         # { "voices": [...] } — most common format
         voices <- content$voices
         if (!is.null(voices)) {
-            if (is.data.frame(voices) && "name" %in% names(voices)) return(voices$name)
-            if (is.character(voices)) return(voices)
+            if (is.data.frame(voices) && "name" %in% names(voices)) {
+                return(voices$name)
+            }
+            if (is.character(voices)) {
+                return(voices)
+            }
         }
 
         # { "data": [...] } — some OpenAI-style responses
         data <- content$data
         if (!is.null(data)) {
-            if (is.data.frame(data) && "name" %in% names(data)) return(data$name)
-            if (is.character(data)) return(data)
+            if (is.data.frame(data) && "name" %in% names(data)) {
+                return(data$name)
+            }
+            if (is.character(data)) {
+                return(data)
+            }
         }
 
         # Top-level data.frame
-        if (is.data.frame(content) && "name" %in% names(content)) return(content$name)
+        if (is.data.frame(content) && "name" %in% names(content)) {
+            return(content$name)
+        }
     }
 
     NULL
 }
-

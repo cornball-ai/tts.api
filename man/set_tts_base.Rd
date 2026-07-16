@@ -16,11 +16,6 @@ Sets the base URL for the TTS API. This should be the root URL without
 trailing slash (e.g., "http://localhost:7810" or "https://api.openai.com").
 }
 \examples{
-\dontrun{
-# For local Chatterbox server
 set_tts_base("http://localhost:7810")
-
-# For OpenAI
-set_tts_base("https://api.openai.com")
-}
+getOption("tts.api_base")
 }

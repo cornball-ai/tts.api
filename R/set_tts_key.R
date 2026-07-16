@@ -7,10 +7,9 @@
 #' @return Invisibly returns the previous value.
 #' @export
 #' @examples
-#' \dontrun{
-#' set_tts_key(Sys.getenv("OPENAI_API_KEY"))
-#' }
-set_tts_key <- function (key) {
+#' set_tts_key("sk-example-key")
+#' getOption("tts.api_key")
+set_tts_key <- function(key) {
     if (!is.character(key) || length(key) != 1) {
         stop("'key' must be a character string", call. = FALSE)
     }
@@ -23,7 +22,6 @@ set_tts_key <- function (key) {
 #'
 #' @return Character string with the API key, or NULL if not set.
 #' @keywords internal
-.tts_get_api_key <- function () {
+.tts_get_api_key <- function() {
     getOption("tts.api_key")
 }
-
