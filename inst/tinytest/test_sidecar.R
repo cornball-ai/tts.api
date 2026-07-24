@@ -55,3 +55,41 @@ expect_true(file.exists(paste0(res, ".json")))
 rec2 <- jsonlite::fromJSON(paste0(res, ".json"))
 expect_equal(rec2$request$image, "in.png")
 unlink(c(res, paste0(res, ".json")))
+
+# --- .sidecar_media: delivered audio facts ----------------------------------
+
+if (nzchar(Sys.which("ffprobe")) && nzchar(Sys.which("ffmpeg"))) {
+    # Audio (the kind this package produces): duration + sample rate + channels.
+    a <- tempfile(fileext = ".wav")
+    system2("ffmpeg", shQuote(c("-nostdin", "-y", "-f", "lavfi", "-i",
+                                "sine=frequency=440:duration=1", "-ar", "24000",
+                                "-ac", "1", a)), stdout = FALSE, stderr = FALSE)
+    ma <- tts.api:::.sidecar_media(a)
+    expect_equal(ma$format, "wav")
+    expect_true(abs(ma$duration - 1) < 0.05)
+    expect_equal(ma$sample_rate, 24000L)
+    expect_equal(ma$channels, 1L)
+    expect_null(ma$frames)
+    unlink(a)
+
+    # A full record for a produced audio file carries the media block.
+    toy_tts <- function(text, file) {
+        tts.api:::.sidecar_arm(environment(), "file")
+        system2("ffmpeg", shQuote(c("-nostdin", "-y", "-f", "lavfi", "-i",
+                                    "sine=frequency=330:duration=0.5", "-ar",
+                                    "16000", file)), stdout = FALSE,
+                stderr = FALSE)
+        invisible(file)
+    }
+    out <- tempfile(fileext = ".mp3")
+    toy_tts("hello", out)
+    rec <- jsonlite::fromJSON(paste0(out, ".json"))
+    expect_equal(rec$fn, "toy_tts")
+    expect_equal(rec$media$format, "mp3")
+    expect_true(rec$media$duration > 0)
+    unlink(c(out, paste0(out, ".json")))
+}
+
+# Unknown extension and missing file yield no media block, never an error.
+expect_null(tts.api:::.sidecar_media(tempfile(fileext = ".xyz")))
+expect_null(tts.api:::.sidecar_media(tempfile(fileext = ".mp3")))
