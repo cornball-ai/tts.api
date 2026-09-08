@@ -1,3 +1,11 @@
+# tts.api 0.3.0.2
+
+* Ship the `tts` skill under `inst/skills/tts/`: agent instructions for
+  reading text aloud against a Chatterbox server, chunking long input so
+  the server does not truncate it silently, stripping markdown before
+  synthesis, and choosing the backend and source explicitly. Moved here
+  from the personal skill hub so it versions with the package.
+
 # tts.api 0.3.0.1
 
 * Sidecars record a `media` block of delivered facts probed from the
