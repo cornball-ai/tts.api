@@ -10,9 +10,10 @@ Description: A minimal-dependency R client for 'OpenAI'-compatible
     text-to-speech APIs (see
     <https://developers.openai.com/api/reference/resources/audio>). Supports
     'OpenAI', 'ElevenLabs', local servers ('Chatterbox', 'LM Studio',
-    'OpenWebUI', 'AnythingLLM'), and the 'chatterbox' package for in-process
-    synthesis. Provides a unified interface for speech synthesis, voice
-    cloning, and voice design with backend-specific parameters.
+    'OpenWebUI', 'AnythingLLM'), the 'chatterbox' package for in-process
+    synthesis, and a fleet GPU host through the 'gpu.host' package. Provides
+    a unified interface for speech synthesis, voice cloning, and voice design
+    with backend-specific parameters.
 License: MIT + file LICENSE
 Encoding: UTF-8
 URL: https://github.com/cornball-ai/tts.api
@@ -24,5 +25,6 @@ Imports:
     utils
 Suggests:
     chatterbox,
+    gpu.host,
     tinytest,
     torch

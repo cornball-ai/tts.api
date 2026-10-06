@@ -1,3 +1,18 @@
+# tts.api 0.3.0.3
+
+* A third place chatterbox runs: `source = "gpuhost"` synthesizes on the
+  fleet's GPU host through the 'gpu.host' package (Suggests), one
+  `/infer` request carrying the text and the voice. A voice file goes
+  as its bytes; a name is looked up in the host's own library first,
+  then the local one. `model` is the host's catalog entry
+  (`"chatterbox-turbo"`; `"turbo"` means the same); NULL takes
+  `options(tts.gpuhost_entry)`, else the first chatterbox entry the
+  host's `/health` lists. The entry takes `temperature` and no CFG, so
+  `exaggeration`, `cfg_weight` and `seed` are reported as not sent.
+  The reply is written as a WAV; another extension or a `speed` goes
+  through ffmpeg. `source = "auto"` now tries the package, then a
+  configured GPU host, then the API.
+
 # tts.api 0.3.0.2
 
 * Ship the `tts` skill under `inst/skills/tts/`: agent instructions for
