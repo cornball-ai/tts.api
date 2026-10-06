@@ -3,12 +3,25 @@
 \alias{tts}
 \title{Generate Speech from Text}
 \usage{
-tts(input, voice, file = NULL,
-    backend = c("auto", "chatterbox", "qwen3", "openai", "elevenlabs"),
-    source = c("api", "auto", "package"), model = NULL, temperature = NULL,
-    speed = NULL, exaggeration = NULL, cfg_weight = NULL, stability = NULL,
-    similarity_boost = NULL, seed = NULL, response_format = NULL,
-    instructions = NULL, language = NULL, device = "cuda")
+tts(
+  input,
+  voice,
+  file = NULL,
+  backend = c("auto", "chatterbox", "qwen3", "openai", "elevenlabs"),
+  source = c("api", "auto", "package", "gpuhost"),
+  model = NULL,
+  temperature = NULL,
+  speed = NULL,
+  exaggeration = NULL,
+  cfg_weight = NULL,
+  stability = NULL,
+  similarity_boost = NULL,
+  seed = NULL,
+  response_format = NULL,
+  instructions = NULL,
+  language = NULL,
+  device = "cuda"
+)
 }
 \arguments{
 \item{input}{Character. The text to convert to speech.}
@@ -17,7 +30,9 @@ tts(input, voice, file = NULL,
 For Chatterbox (package or container) and Qwen3: a voice-library name (e.g.
 "FatherChristmas") or a path to a reference audio file. The package source
 resolves names via \code{\link{voice_file}}; containers resolve them
-server-side.
+server-side. The gpuhost source sends a file as its bytes, and looks a
+name up in the host's own library first (\code{gpu.host::gpu_host_voices()}),
+then in the local library.
 For OpenAI: "alloy", "echo", "fable", "onyx", "nova", "shimmer".
 For ElevenLabs: voice ID (e.g., "XpDLYThV0yUAFjVTok7m").}
 
@@ -29,12 +44,26 @@ synthesizes; see \code{source} for *where* it runs.}
 
 \item{source}{Character. Where the engine runs: "api" (default) for an HTTP
 service (container or hosted package server), "package" for the in-process
-R chatterbox package, or "auto" which uses the package for chatterbox when
-it is installed and the API otherwise. Only "chatterbox" has a package
-source; the other engines are API-only.}
+R chatterbox package, "gpuhost" for the fleet's GPU host through the
+\pkg{gpu.host} package, or "auto" which uses the package for chatterbox
+when it is installed, else the GPU host when one is configured, else the
+API. Only "chatterbox" has a package or a gpuhost source; the other
+engines are API-only.
+
+With "gpuhost", the host's entry takes the text, the voice and
+\code{temperature}; it has no CFG, so \code{exaggeration},
+\code{cfg_weight} and \code{seed} are reported as not sent. The reply is
+PCM, written as a WAV; another extension on \code{file}, or a
+\code{speed} other than 1, goes through ffmpeg, and with no \code{file}
+the bytes are WAV. Where the host is and its token come from gpu.host's
+configuration (\code{gpu.host::gpu_host_config()}); \code{tts.timeout}
+bounds the request.}
 
 \item{model}{Character or NULL. The sub-model to use.
-For Chatterbox package source: "turbo" loads Chatterbox Turbo.
+For Chatterbox package source: "turbo" loads Chatterbox Turbo. For the
+gpuhost source: the host's catalog entry ("chatterbox-turbo"; "turbo"
+means the same), or NULL for \code{options(tts.gpuhost_entry)}, else the
+first chatterbox entry the host lists.
 For OpenAI: "tts-1" or "tts-1-hd".
 For ElevenLabs: "eleven_multilingual_v2" (default), "eleven_turbo_v2_5", etc.}
 
@@ -86,6 +115,11 @@ tts("Hello, world!", voice = "FatherChristmas", file = "hello.mp3",
 set_tts_base("http://troy-g5:7810")
 tts("Hello, world!", voice = "FatherChristmas", file = "hello.wav",
     source = "api")
+
+# The fleet's GPU host, configured once through gpu.host
+gpu.host::gpu_host_config("http://troy-g5:7878", "~/gpuhost.token")
+tts("Hello, world!", voice = "FatherChristmas", file = "hello.wav",
+    source = "gpuhost")
 
 # Using OpenAI TTS
 tts("Hello, world!", voice = "nova", file = "hello.mp3", backend = "openai")

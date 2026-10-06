@@ -8,7 +8,9 @@
 #'   For Chatterbox (package or container) and Qwen3: a voice-library name (e.g.
 #'   "FatherChristmas") or a path to a reference audio file. The package source
 #'   resolves names via \code{\link{voice_file}}; containers resolve them
-#'   server-side.
+#'   server-side. The gpuhost source sends a file as its bytes, and looks a
+#'   name up in the host's own library first (\code{gpu.host::gpu_host_voices()}),
+#'   then in the local library.
 #'   For OpenAI: "alloy", "echo", "fable", "onyx", "nova", "shimmer".
 #'   For ElevenLabs: voice ID (e.g., "XpDLYThV0yUAFjVTok7m").
 #' @param file Character or NULL. Output file path. If NULL, returns raw bytes.
@@ -17,11 +19,25 @@
 #'   synthesizes; see \code{source} for *where* it runs.
 #' @param source Character. Where the engine runs: "api" (default) for an HTTP
 #'   service (container or hosted package server), "package" for the in-process
-#'   R chatterbox package, or "auto" which uses the package for chatterbox when
-#'   it is installed and the API otherwise. Only "chatterbox" has a package
-#'   source; the other engines are API-only.
+#'   R chatterbox package, "gpuhost" for the fleet's GPU host through the
+#'   \pkg{gpu.host} package, or "auto" which uses the package for chatterbox
+#'   when it is installed, else the GPU host when one is configured, else the
+#'   API. Only "chatterbox" has a package or a gpuhost source; the other
+#'   engines are API-only.
+#'
+#'   With "gpuhost", the host's entry takes the text, the voice and
+#'   \code{temperature}; it has no CFG, so \code{exaggeration},
+#'   \code{cfg_weight} and \code{seed} are reported as not sent. The reply is
+#'   PCM, written as a WAV; another extension on \code{file}, or a
+#'   \code{speed} other than 1, goes through ffmpeg, and with no \code{file}
+#'   the bytes are WAV. Where the host is and its token come from gpu.host's
+#'   configuration (\code{gpu.host::gpu_host_config()}); \code{tts.timeout}
+#'   bounds the request.
 #' @param model Character or NULL. The sub-model to use.
-#'   For Chatterbox package source: "turbo" loads Chatterbox Turbo.
+#'   For Chatterbox package source: "turbo" loads Chatterbox Turbo. For the
+#'   gpuhost source: the host's catalog entry ("chatterbox-turbo"; "turbo"
+#'   means the same), or NULL for \code{options(tts.gpuhost_entry)}, else the
+#'   first chatterbox entry the host lists.
 #'   For OpenAI: "tts-1" or "tts-1-hd".
 #'   For ElevenLabs: "eleven_multilingual_v2" (default), "eleven_turbo_v2_5", etc.
 #' @param temperature Numeric or NULL. Sampling temperature for generation.
@@ -59,6 +75,11 @@
 #' tts("Hello, world!", voice = "FatherChristmas", file = "hello.wav",
 #'     source = "api")
 #'
+#' # The fleet's GPU host, configured once through gpu.host
+#' gpu.host::gpu_host_config("http://troy-g5:7878", "~/gpuhost.token")
+#' tts("Hello, world!", voice = "FatherChristmas", file = "hello.wav",
+#'     source = "gpuhost")
+#'
 #' # Using OpenAI TTS
 #' tts("Hello, world!", voice = "nova", file = "hello.mp3", backend = "openai")
 #'
@@ -68,7 +89,7 @@
 #' }
 tts <- function(input, voice, file = NULL,
                 backend = c("auto", "chatterbox", "qwen3", "openai", "elevenlabs"),
-                source = c("api", "auto", "package"), model = NULL,
+                source = c("api", "auto", "package", "gpuhost"), model = NULL,
                 temperature = NULL, speed = NULL, exaggeration = NULL,
                 cfg_weight = NULL, stability = NULL, similarity_boost = NULL,
                 seed = NULL, response_format = NULL, instructions = NULL,
@@ -102,19 +123,38 @@ tts <- function(input, voice, file = NULL,
     }
 
     # Resolve where it runs: "auto" prefers the in-process package for
-    # chatterbox when installed, otherwise the API.
+    # chatterbox when installed, then a configured GPU host, otherwise
+    # the API.
     if (source == "auto") {
         source <- if (backend == "chatterbox" && .has_chatterbox()) {
             "package"
+        } else if (backend == "chatterbox" && .gpu_host_configured()) {
+            "gpuhost"
         } else {
             "api"
         }
     }
 
-    # Only chatterbox has a package implementation.
-    if (source == "package" && backend != "chatterbox") {
-        stop("source = 'package' is only available for backend = 'chatterbox'; ",
-             backend, " runs via the API (source = 'api').", call. = FALSE)
+    # Only chatterbox has a package implementation, or a GPU host entry.
+    if (source %in% c("package", "gpuhost") && backend != "chatterbox") {
+        stop("source = '", source, "' is only available for backend = ",
+             "'chatterbox'; ", backend, " runs via the API (source = 'api').",
+             call. = FALSE)
+    }
+
+    # Dispatch to the fleet's GPU host
+    if (source == "gpuhost") {
+        return(.via_gpuhost(
+                            input = input,
+                            voice = voice,
+                            file = file,
+                            model = model,
+                            temperature = temperature,
+                            speed = speed,
+                            exaggeration = exaggeration,
+                            cfg_weight = cfg_weight,
+                            seed = seed
+            ))
     }
 
     # Dispatch to the in-process chatterbox package
