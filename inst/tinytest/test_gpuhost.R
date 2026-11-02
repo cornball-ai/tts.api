@@ -1,22 +1,25 @@
-# source = "gpuhost": chatterbox on the fleet's GPU host through gpu.host.
+# source = "gpuhost": chatterbox on the fleet's GPU host through gpu.ctl's
+# client.
 #
-# Everything here runs against gpu.host's request hook, so no host and no
-# network: the assertions are about what tts() sends and what it writes
-# from the host's reply. The source-resolution tests fake .has_chatterbox
-# so they do not depend on what this machine has installed.
+# Everything here runs against the client's request hook, so no host and
+# no network: the assertions are about what tts() sends and what it
+# writes from the host's reply. The source-resolution tests fake
+# .has_chatterbox so they do not depend on what this machine has
+# installed.
 
-if (!requireNamespace("gpu.host", quietly = TRUE)) {
-    exit_file("gpu.host not installed")
+if (!requireNamespace("gpu.ctl", quietly = TRUE) ||
+    packageVersion("gpu.ctl") < "0.1.0.38") {
+    exit_file("gpu.ctl 0.1.0.38 or later not installed")
 }
 
-# ---- isolate from any real gpu.host configuration on this machine ----
+# ---- isolate from any real client configuration on this machine ----
 cfg_dir <- tempfile("tts-gpuhost-")
 old_cfg <- Sys.getenv("R_USER_CONFIG_DIR", unset = NA)
 Sys.setenv(R_USER_CONFIG_DIR = cfg_dir)
 old_env <- Sys.getenv(c("GPU_HOST_BASE", "GPU_HOST_TOKEN"), unset = NA)
 Sys.unsetenv(c("GPU_HOST_BASE", "GPU_HOST_TOKEN"))
-old_opts <- options(gpu.host.base = NULL, gpu.host.token = NULL,
-                    gpu.host.http = NULL, tts.gpuhost_entry = NULL,
+old_opts <- options(gpu.ctl.base = NULL, gpu.ctl.token = NULL,
+                    gpu.ctl.http = NULL, tts.gpuhost_entry = NULL,
                     tts.api_base = NULL, tts.timeout = 30)
 
 ns <- asNamespace("tts.api")
@@ -50,7 +53,7 @@ answer <- list(status = 200L,
                headers = list("content-type" = "application/octet-stream",
                               "x-gpuhost-meta" = '{"ok":true,"sample_rate":24000}'),
                body = pcm)
-options(gpu.host.http = function(method, url, headers, body, timeout) {
+options(gpu.ctl.http = function(method, url, headers, body, timeout) {
     calls[[length(calls) + 1L]] <<- url
     if (grepl("/health$", url)) {
         return(envelope(list(ok = TRUE, value = health)))
@@ -72,8 +75,8 @@ writeBin(ref_bytes, ref)
 
 # ---- not configured: the source refuses and says how to configure ----
 expect_false(tts.api:::.gpu_host_configured())
-expect_error(tts("hello", voice = ref, source = "gpuhost"), "gpu_host_config")
-options(gpu.host.base = "http://gpu:7878", gpu.host.token = tok)
+expect_error(tts("hello", voice = ref, source = "gpuhost"), "host_config")
+options(gpu.ctl.base = "http://gpu:7878", gpu.ctl.token = tok)
 expect_true(tts.api:::.gpu_host_configured())
 expect_error(tts("hello", voice = "nova", backend = "openai", source = "gpuhost"),
              "backend = 'chatterbox'")
@@ -91,7 +94,7 @@ expect_equal(req$entry, "chatterbox-turbo")
 expect_equal(sort(names(req$input)), c("text", "voice_b64"))
 expect_equal(req$input$text, "hello there")
 expect_equal(req$input$voice_b64, jsonlite::base64_enc(ref_bytes))
-expect_equal(req$key, gpu.host::gpu_host_key("chatterbox-turbo", list(
+expect_equal(req$key, gpu.ctl::host_key("chatterbox-turbo", list(
     text = "hello there", voice_b64 = jsonlite::base64_enc(ref_bytes))))
 # no file: the WAV bytes
 expect_true(is.raw(wav))
@@ -175,17 +178,17 @@ without_chatterbox(tts("hi", voice = ref, model = "turbo", source = "auto"))
 expect_equal(sent$url, "http://gpu:7878/infer")
 expect_error(without_chatterbox(tts("hi", voice = ref, model = "turbo")),
              "set_tts_base")
-options(gpu.host.base = NULL)
+options(gpu.ctl.base = NULL)
 expect_error(without_chatterbox(tts("hi", voice = ref, model = "turbo", source = "auto")),
              "set_tts_base")
-options(gpu.host.base = "http://gpu:7878")
+options(gpu.ctl.base = "http://gpu:7878")
 
 # ---- the host's refusals surface as they are ----
 answer <- list(status = 409L, headers = list("content-type" = "application/json"),
                body = charToRaw('{"ok":false,"error":"same key, different content"}'))
 e <- tryCatch(tts("hi", voice = ref, model = "turbo", source = "gpuhost"),
               error = function(e) e)
-expect_true(inherits(e, "gpu_host_error"))
+expect_true(inherits(e, "host_error"))
 expect_equal(e$status, 409L)
 answer <- envelope(list(ok = FALSE, error = "generation hit the cap"))
 expect_error(tts("hi", voice = ref, model = "turbo", source = "gpuhost"),

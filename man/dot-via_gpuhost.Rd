@@ -37,7 +37,7 @@ local library.}
 \code{file} invisibly, or the WAV as raw bytes.
 }
 \description{
-One \code{/infer} request through gpu.host. The entry takes the text,
+One \code{/infer} request through gpu.ctl's client. The entry takes the text,
 the voice and a temperature; it has no CFG, so \code{exaggeration}
 and \code{cfg_weight} are not sent, and that is said rather than
 swallowed. The reply is PCM, written as WAV; any other extension on

@@ -1,22 +1,23 @@
 # The fleet's GPU host as a place chatterbox runs: tts.api's third source.
 #
-# gpu.host is the client to a gpu.ctl host, or to the router in front of
-# several: one base, one token, POST /infer with the text and the voice
-# in the request. This file is the model-shaped half, which is the half
-# the client refuses to know: which catalog entry, what goes in the
-# input, and how the host's reply becomes the file the caller asked
-# for. The reply is float32 PCM with the sample rate in a header;
-# gpu.host turns it into a WAV, and ffmpeg (already used here for
-# speed) makes any other container.
+# gpu.ctl's client (host_infer() and friends, from 0.1.0.38) speaks to a
+# gpu.ctl host, or to the router in front of several: one base, one
+# token, POST /infer with the text and the voice in the request. This
+# file is the model-shaped half, which is the half the client refuses to
+# know: which catalog entry, what goes in the input, and how the host's
+# reply becomes the file the caller asked for. The reply is float32 PCM
+# with the sample rate in a header; the client turns it into a WAV, and
+# ffmpeg (already used here for speed) makes any other container.
 
 .has_gpu_host <- function() {
-    requireNamespace("gpu.host", quietly = TRUE)
+    requireNamespace("gpu.ctl", quietly = TRUE) &&
+        utils::packageVersion("gpu.ctl") >= "0.1.0.38"
 }
 
 # Configured means a base resolves and the token file exists; whether
 # the host answers is asked when a request is made.
 .gpu_host_configured <- function() {
-    .has_gpu_host() && gpu.host::gpu_host_configured()
+    .has_gpu_host() && gpu.ctl::host_configured()
 }
 
 # Which catalog entry synthesizes on this host. A property of the
@@ -37,7 +38,7 @@
     if (is.character(opt) && length(opt) == 1L && !is.na(opt) && nzchar(opt)) {
         return(opt)
     }
-    entries <- as.character(gpu.host::gpu_host_health()$entries)
+    entries <- as.character(gpu.ctl::host_health()$entries)
     hit <- entries[startsWith(entries, "chatterbox")]
     if (!length(hit)) {
         stop("the GPU host serves no chatterbox entry (it lists: ",
@@ -56,7 +57,7 @@
         bytes <- readBin(voice, "raw", n = file.size(voice))
         return(list(voice_b64 = jsonlite::base64_enc(bytes)))
     }
-    lib <- tryCatch(gpu.host::gpu_host_voices()$voices, error = function(e) NULL)
+    lib <- tryCatch(gpu.ctl::host_voices()$voices, error = function(e) NULL)
     if (is.data.frame(lib) && nrow(lib) > 0 && all(c("id", "name") %in% names(lib))) {
         idx <- match(voice, lib$name)
         if (is.na(idx)) {
@@ -82,7 +83,7 @@
 
 #' Internal: Synthesize on the fleet's GPU host
 #'
-#' One \code{/infer} request through gpu.host. The entry takes the text,
+#' One \code{/infer} request through gpu.ctl's client. The entry takes the text,
 #' the voice and a temperature; it has no CFG, so \code{exaggeration}
 #' and \code{cfg_weight} are not sent, and that is said rather than
 #' swallowed. The reply is PCM, written as WAV; any other extension on
@@ -104,8 +105,8 @@
                          exaggeration = NULL, cfg_weight = NULL,
                          seed = NULL) {
     if (!.has_gpu_host()) {
-        stop("source = 'gpuhost' needs the gpu.host package.\n",
-             "Install with: remotes::install_github('cornball-ai/gpu.host')",
+        stop("source = 'gpuhost' needs gpu.ctl 0.1.0.38 or later.\n",
+             "Install with: remotes::install_github('cornball-ai/gpu.ctl')",
              call. = FALSE)
     }
     entry <- .gpuhost_entry(model)
@@ -124,9 +125,8 @@
                 paste(dropped, collapse = ", "), "; not sent")
     }
 
-    reply <- gpu.host::gpu_host_infer(entry, req,
-                                      timeout = getOption("tts.timeout", 30))
-    wav <- gpu.host::gpu_host_wav(gpu.host::gpu_host_pcm(reply))
+    reply <- gpu.ctl::host_infer(entry, req, timeout = getOption("tts.timeout", 30))
+    wav <- gpu.ctl::host_wav(gpu.ctl::host_pcm(reply))
     if (is.null(file)) {
         return(wav)
     }

@@ -1,3 +1,11 @@
+# tts.api 0.3.0.4
+
+* The gpuhost source goes through gpu.ctl's client (gpu.ctl >= 0.1.0.38,
+  Suggests) instead of the retired gpu.host package: `host_infer()`,
+  `host_pcm()`, `host_wav()`, `host_voices()`, `host_health()`,
+  `host_configured()`. Configure with `gpu.ctl::host_config()` or
+  `options(gpu.ctl.base, gpu.ctl.token)`; a refusal is a `host_error`.
+
 # tts.api 0.3.0.3
 
 * A third place chatterbox runs: `source = "gpuhost"` synthesizes on the

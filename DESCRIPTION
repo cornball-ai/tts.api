@@ -1,6 +1,6 @@
 Package: tts.api
 Title: 'OpenAI'-Compatible Text-to-Speech API Client
-Version: 0.3.0.3
+Version: 0.3.0.4
 Authors@R: c(
     person("Troy", "Hernandez", role = c("aut", "cre"),
            email = "troy@cornball.ai",
@@ -11,7 +11,7 @@ Description: A minimal-dependency R client for 'OpenAI'-compatible
     <https://developers.openai.com/api/reference/resources/audio>). Supports
     'OpenAI', 'ElevenLabs', local servers ('Chatterbox', 'LM Studio',
     'OpenWebUI', 'AnythingLLM'), the 'chatterbox' package for in-process
-    synthesis, and a fleet GPU host through the 'gpu.host' package. Provides
+    synthesis, and a fleet GPU host through the 'gpu.ctl' package's client. Provides
     a unified interface for speech synthesis, voice cloning, and voice design
     with backend-specific parameters.
 License: MIT + file LICENSE
@@ -25,6 +25,6 @@ Imports:
     utils
 Suggests:
     chatterbox,
-    gpu.host,
+    gpu.ctl (>= 0.1.0.38),
     tinytest,
     torch

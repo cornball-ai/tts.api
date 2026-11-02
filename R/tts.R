@@ -9,7 +9,7 @@
 #'   "FatherChristmas") or a path to a reference audio file. The package source
 #'   resolves names via \code{\link{voice_file}}; containers resolve them
 #'   server-side. The gpuhost source sends a file as its bytes, and looks a
-#'   name up in the host's own library first (\code{gpu.host::gpu_host_voices()}),
+#'   name up in the host's own library first (\code{gpu.ctl::host_voices()}),
 #'   then in the local library.
 #'   For OpenAI: "alloy", "echo", "fable", "onyx", "nova", "shimmer".
 #'   For ElevenLabs: voice ID (e.g., "XpDLYThV0yUAFjVTok7m").
@@ -20,7 +20,7 @@
 #' @param source Character. Where the engine runs: "api" (default) for an HTTP
 #'   service (container or hosted package server), "package" for the in-process
 #'   R chatterbox package, "gpuhost" for the fleet's GPU host through the
-#'   \pkg{gpu.host} package, or "auto" which uses the package for chatterbox
+#'   \pkg{gpu.ctl} client, or "auto" which uses the package for chatterbox
 #'   when it is installed, else the GPU host when one is configured, else the
 #'   API. Only "chatterbox" has a package or a gpuhost source; the other
 #'   engines are API-only.
@@ -30,8 +30,8 @@
 #'   \code{cfg_weight} and \code{seed} are reported as not sent. The reply is
 #'   PCM, written as a WAV; another extension on \code{file}, or a
 #'   \code{speed} other than 1, goes through ffmpeg, and with no \code{file}
-#'   the bytes are WAV. Where the host is and its token come from gpu.host's
-#'   configuration (\code{gpu.host::gpu_host_config()}); \code{tts.timeout}
+#'   the bytes are WAV. Where the host is and its token come from gpu.ctl's
+#'   client configuration (\code{gpu.ctl::host_config()}); \code{tts.timeout}
 #'   bounds the request.
 #' @param model Character or NULL. The sub-model to use.
 #'   For Chatterbox package source: "turbo" loads Chatterbox Turbo. For the
@@ -75,8 +75,8 @@
 #' tts("Hello, world!", voice = "FatherChristmas", file = "hello.wav",
 #'     source = "api")
 #'
-#' # The fleet's GPU host, configured once through gpu.host
-#' gpu.host::gpu_host_config("http://troy-g5:7878", "~/gpuhost.token")
+#' # The fleet's GPU host, configured once through gpu.ctl's client
+#' gpu.ctl::host_config("http://gpu-box:7878", "~/gpuhost.token")
 #' tts("Hello, world!", voice = "FatherChristmas", file = "hello.wav",
 #'     source = "gpuhost")
 #'
