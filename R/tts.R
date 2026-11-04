@@ -32,7 +32,10 @@
 #'   \code{speed} other than 1, goes through ffmpeg, and with no \code{file}
 #'   the bytes are WAV. Where the host is and its token come from gpu.ctl's
 #'   client configuration (\code{gpu.ctl::host_config()}); \code{tts.timeout}
-#'   bounds the request.
+#'   bounds the request. The host serves in priority order: the class is
+#'   the key's own unless \code{options(tts.priority)} names another
+#'   ("interactive", "normal", "batch", "idle", or a number) within the
+#'   key's ceiling.
 #' @param model Character or NULL. The sub-model to use.
 #'   For Chatterbox package source: "turbo" loads Chatterbox Turbo. For the
 #'   gpuhost source: the host's catalog entry ("chatterbox-turbo"; "turbo"

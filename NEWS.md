@@ -1,3 +1,9 @@
+# tts.api 0.3.0.5
+
+* The gpuhost source passes `options(tts.priority)` as the request's
+  `X-GpuHost-Priority` (gpu.ctl >= 0.1.0.39 hosts serve in priority
+  order; the class is the key's own when the option is unset).
+
 # tts.api 0.3.0.4
 
 * The gpuhost source goes through gpu.ctl's client (gpu.ctl >= 0.1.0.38,
