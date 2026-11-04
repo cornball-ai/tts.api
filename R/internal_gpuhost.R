@@ -125,7 +125,11 @@
                 paste(dropped, collapse = ", "), "; not sent")
     }
 
-    reply <- gpu.ctl::host_infer(entry, req, timeout = getOption("tts.timeout", 30))
+    # The class is the KEY'S by default (a bot's key says interactive, a
+    # person's normal); `tts.priority` names another within the key's
+    # ceiling, for a caller whose key is shared across kinds of work.
+    reply <- gpu.ctl::host_infer(entry, req, timeout = getOption("tts.timeout", 30),
+                                 priority = getOption("tts.priority"))
     wav <- gpu.ctl::host_wav(gpu.ctl::host_pcm(reply))
     if (is.null(file)) {
         return(wav)
